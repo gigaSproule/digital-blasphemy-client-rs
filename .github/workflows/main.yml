@@ -171,6 +171,7 @@ jobs:
           dry-run: ${{ github.ref_type != 'tag' }}
           registry-token: ${{ secrets.CARGO_REGISTRY_TOKEN }}
       - name: Create Release
+        if: ${{ github.ref_type == 'tag' }}
         uses: ncipollo/release-action@v1.18.0
         with:
           artifacts: libdigital_blasphemy_client_linux.rlib,libdigital_blasphemy_client_macos.rlib,libdigital_blasphemy_client_windows.rlib
