@@ -1,0 +1,144 @@
+use crate::{model::common_response::Endpoints, model::wallpaper::Wallpaper, model::Operator};
+use serde::{Deserialize, Serialize};
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct GetWallpaperResponse {
+    pub db_core: GetWallpaperDBCore,
+    pub wallpaper: Wallpaper,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct GetWallpaperDBCore {
+    pub timestamp: i64,
+    pub endpoints: Endpoints,
+    pub request: GetWallpaperDBCoreRequest,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct GetWallpaperDBCoreRequest {
+    pub params: GetWallpaperResponseParams,
+    pub query: GetWallpaperResponseQuery,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct GetWallpaperResponseParams {
+    pub wallpaper_id: i64,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct GetWallpaperResponseQuery {
+    pub filter_res_height: i64,
+    pub filter_res_operator: Operator,
+    pub filter_res_operator_height: Option<Operator>,
+    pub filter_res_operator_width: Option<Operator>,
+    pub filter_res_width: i64,
+    pub show_comments: bool,
+    pub show_pickle_jar: bool,
+    pub show_resolutions: bool,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct GetWallpaperRequest {
+    pub wallpaper_id: u16,
+    pub filter_res_height: i64,
+    pub filter_res_operator: Operator,
+    pub filter_res_operator_height: Operator,
+    pub filter_res_operator_width: Operator,
+    pub filter_res_width: i64,
+    pub show_comments: bool,
+    pub show_pickle_jar: bool,
+    pub show_resolutions: bool,
+}
+
+// TODO: Remove allow dead code when tests are implemented
+#[allow(dead_code)]
+impl GetWallpaperRequest {
+    pub fn builder() -> GetWallpaperRequestBuilder {
+        GetWallpaperRequestBuilder::new()
+    }
+}
+
+// TODO: Remove allow dead code when tests are implemented
+#[allow(dead_code)]
+#[derive(Clone)]
+pub struct GetWallpaperRequestBuilder {
+    get_wallpaper_request: GetWallpaperRequest,
+}
+
+// TODO: Remove allow dead code when tests are implemented
+#[allow(dead_code)]
+impl GetWallpaperRequestBuilder {
+    pub(crate) fn new() -> Self {
+        GetWallpaperRequestBuilder {
+            get_wallpaper_request: GetWallpaperRequest {
+                wallpaper_id: 0,
+                filter_res_height: 0,
+                filter_res_operator: Operator::GreaterThanOrEqual,
+                filter_res_operator_height: Operator::GreaterThanOrEqual,
+                filter_res_operator_width: Operator::GreaterThanOrEqual,
+                filter_res_width: 0,
+                show_comments: false,
+                show_pickle_jar: false,
+                show_resolutions: true,
+            },
+        }
+    }
+
+    pub fn build(self) -> GetWallpaperRequest {
+        self.get_wallpaper_request
+    }
+
+    pub fn wallpaper_id(mut self, wallpaper_id: u16) -> GetWallpaperRequestBuilder {
+        self.get_wallpaper_request.wallpaper_id = wallpaper_id;
+        self
+    }
+
+    pub fn filter_res_height(mut self, filter_res_height: i64) -> GetWallpaperRequestBuilder {
+        self.get_wallpaper_request.filter_res_height = filter_res_height;
+        self
+    }
+
+    pub fn filter_res_operator(
+        mut self,
+        filter_res_operator: Operator,
+    ) -> GetWallpaperRequestBuilder {
+        self.get_wallpaper_request.filter_res_operator = filter_res_operator;
+        self
+    }
+
+    pub fn filter_res_operator_height(
+        mut self,
+        filter_res_operator_height: Operator,
+    ) -> GetWallpaperRequestBuilder {
+        self.get_wallpaper_request.filter_res_operator_height = filter_res_operator_height;
+        self
+    }
+
+    pub fn filter_res_operator_width(
+        mut self,
+        filter_res_operator_width: Operator,
+    ) -> GetWallpaperRequestBuilder {
+        self.get_wallpaper_request.filter_res_operator_height = filter_res_operator_width;
+        self
+    }
+
+    pub fn filter_res_width(mut self, filter_res_width: i64) -> GetWallpaperRequestBuilder {
+        self.get_wallpaper_request.filter_res_width = filter_res_width;
+        self
+    }
+
+    pub fn show_comments(mut self, show_comments: bool) -> GetWallpaperRequestBuilder {
+        self.get_wallpaper_request.show_comments = show_comments;
+        self
+    }
+
+    pub fn show_pickle_jar(mut self, show_pickle_jar: bool) -> GetWallpaperRequestBuilder {
+        self.get_wallpaper_request.show_pickle_jar = show_pickle_jar;
+        self
+    }
+
+    pub fn show_resolutions(mut self, show_resolutions: bool) -> GetWallpaperRequestBuilder {
+        self.get_wallpaper_request.show_resolutions = show_resolutions;
+        self
+    }
+}
