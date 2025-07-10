@@ -161,10 +161,17 @@ jobs:
           name: digital-blasphemy-client-macos
       - name: Set version
         if: ${{ github.ref_type == 'tag' }}
-        run: cargo install cargo-edit --no-default-features --features "set-version" && cargo set-version ${{ github.ref_name }}
+        run: |
+          cargo install cargo-edit --no-default-features --features "set-version"
+          cargo set-version ${{ github.ref_name }}
       - name: Commit version
         if: ${{ github.ref_type == 'tag' }}
-        run: 'git add Cargo.toml && git commit -m "chore: set version to ${{ github.ref_name }}" && git push'
+        run: |
+          git config --global user.email "githubactions@benjaminsproule.com"
+          git config --global user.name "GitHub Actions"
+          git add Cargo.toml
+          git commit -m "chore: set version to ${{ github.ref_name }}"
+          git push
       - name: Publish to crates.io
         uses: katyo/publish-crates@v2
         with:
