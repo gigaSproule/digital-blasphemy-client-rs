@@ -161,7 +161,7 @@ jobs:
           name: digital-blasphemy-client-macos
       - name: Set version
         if: ${{ github.ref_type == 'tag' }}
-        run: cargo set-version ${{ github.ref_name }}
+        run: cargo install cargo-edit -f --no-default-features --features "set-version" && cargo set-version ${{ github.ref_name }}
       - name: Commit version
         if: ${{ github.ref_type == 'tag' }}
         run: 'git add Cargo.toml && git commit -m "chore: set version to ${{ github.ref_name }}" && git push'
