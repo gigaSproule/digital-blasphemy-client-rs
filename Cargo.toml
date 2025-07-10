@@ -2,6 +2,14 @@
 name = "digital_blasphemy_client"
 version = "0.1.1"
 edition = "2024"
+description = "A client for the Digital Blasphemy API"
+license = "Apache-2.0"
+license-file = "LICENSE"
+homepage = "https://github.com/gigaSproule/digital-blasphemy-client"
+repository = "https://github.com/gigaSproule/digital-blasphemy-client"
+readme = "README.md"
+keywords = ["digital", "blasphemy"]
+categories = ["api-bindings"]
 
 [dependencies]
 serde = { version = "1.0.219", features = ["derive"] }

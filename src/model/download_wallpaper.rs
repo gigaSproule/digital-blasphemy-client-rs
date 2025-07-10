@@ -1,4 +1,4 @@
-use crate::{model::common_response::Endpoints, model::WallpaperType};
+use crate::{model::WallpaperType, model::common_response::Endpoints};
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Debug, Clone)]

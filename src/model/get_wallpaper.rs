@@ -1,4 +1,4 @@
-use crate::{model::common_response::Endpoints, model::wallpaper::Wallpaper, model::Operator};
+use crate::{model::Operator, model::common_response::Endpoints, model::wallpaper::Wallpaper};
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Debug)]
