@@ -86,12 +86,12 @@ jobs:
       - name: Run build
         run: cargo build --release
       - name: Rename binary
-        run: mv target/release/digitalblasphemy-client target/release/digitalblasphemy-client-linux
+        run: mv target/release/digital-blasphemy-client.rlib target/release/digital-blasphemy-client-linux.rlib
       - name: Temporarily save linux binary
         uses: actions/upload-artifact@v4
         with:
-          name: digitalblasphemy-client-linux
-          path: target/release/digitalblasphemy-client-linux
+          name: digital-blasphemy-client-linux
+          path: target/release/digital-blasphemy-client-linux.rlib
           retention-days: 1
   build-windows:
     runs-on: "windows-latest"
@@ -107,12 +107,12 @@ jobs:
       - name: Run build
         run: cargo build --release
       - name: Rename binary
-        run: mv target\release\digitalblasphemy-client.exe target\release\digitalblasphemy-client-windows.exe
+        run: mv target\release\digital-blasphemy-client.rlib target\release\digital-blasphemy-client-windows.rlib
       - name: Temporarily save windows binary
         uses: actions/upload-artifact@v4
         with:
-          name: digitalblasphemy-client-windows
-          path: target\release\digitalblasphemy-client-windows.exe
+          name: digital-blasphemy-client-windows
+          path: target\release\digital-blasphemy-client-windows.rlib
           retention-days: 1
   build-macos:
     runs-on: "macos-latest"
@@ -128,12 +128,12 @@ jobs:
       - name: Run build
         run: cargo build --release
       - name: Rename binary
-        run: mv target/release/digitalblasphemy-client target/release/digitalblasphemy-client-macos
+        run: mv target/release/digital-blasphemy-client.rlib target/release/digital-blasphemy-client-macos.rlib
       - name: Temporarily save mac os binary
         uses: actions/upload-artifact@v4
         with:
-          name: digitalblasphemy-client-macos
-          path: target/release/digitalblasphemy-client-macos
+          name: digital-blasphemy-client-macos
+          path: target/release/digital-blasphemy-client-macos.rlib
           retention-days: 1
   release:
     runs-on: "ubuntu-latest"
@@ -146,15 +146,15 @@ jobs:
       - name: Retrieve saved linux binary
         uses: actions/download-artifact@v4
         with:
-          name: digitalblasphemy-client-linux
+          name: digital-blasphemy-client-linux
       - name: Retrieve saved windows binary
         uses: actions/download-artifact@v4
         with:
-          name: digitalblasphemy-client-windows
+          name: digital-blasphemy-client-windows
       - name: Retrieve saved mac os binary
         uses: actions/download-artifact@v4
         with:
-          name: digitalblasphemy-client-macos
+          name: digital-blasphemy-client-macos
       - name: Set version
         if: ${{ github.ref_type == 'tag' }}
         run: cargo set-version ${{ github.ref_name }}
@@ -169,6 +169,6 @@ jobs:
       - name: Create Release
         uses: ncipollo/release-action@v1.18.0
         with:
-          artifacts: digital-blasphemy-client-linux,digital-blasphemy-client-linux,digital-blasphemy-client-linux.exe
+          artifacts: digital-blasphemy-client-linux.rlib,digital-blasphemy-client-macos.rlib,digital-blasphemy-client-windows.rlib
           generateReleaseNotes: true
           makeLatest: true
