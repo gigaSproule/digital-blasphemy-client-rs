@@ -106,13 +106,15 @@ jobs:
         with:
           registry-token: ${{ secrets.CARGO_REGISTRY_TOKEN }}
       - name: Set version for next release
+        id: next-release-version
         run: |
           NEXT_VERSION=$(echo ${{ github.ref_name }} | awk -F. -v OFS=. '{$NF += 1 ; print}')-alpha
           cargo set-version "$NEXT_VERSION"
+          echo "next-version=${NEXT_VERSION}" >> $GITHUB_OUTPUT
       - name: Commit next release version
         run: |
           git add Cargo.toml Cargo.lock
-          git commit -m "chore: set version to $NEXT_VERSION"
+          git commit -m "chore: set version to ${{ steps.next-release-version.outputs.next-version }}"
           git push origin HEAD:main
       - name: Create Release
         if: ${{ github.ref_type == 'tag' }}
