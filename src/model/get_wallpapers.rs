@@ -274,3 +274,122 @@ impl GetWallpapersRequestQueryBuilder {
         self
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    mod get_wallpapers_request_query_builder {
+        use super::*;
+
+        #[test]
+        #[should_panic(expected = "Filter date day must be between 1 and 31.")]
+        fn test_get_wallpapers_request_query_builder_filter_date_day_rejects_less_than_1() {
+            GetWallpapersRequestQueryBuilder::new().filter_date_day(0);
+        }
+
+        #[test]
+        #[should_panic(expected = "Filter date day must be between 1 and 31.")]
+        fn test_get_wallpapers_request_query_builder_filter_date_day_rejects_greater_than_31() {
+            GetWallpapersRequestQueryBuilder::new().filter_date_day(32);
+        }
+
+        #[test]
+        fn test_get_wallpapers_request_query_builder_filter_date_day_accepts_1() {
+            GetWallpapersRequestQueryBuilder::new().filter_date_day(1);
+        }
+
+        #[test]
+        fn test_get_wallpapers_request_query_builder_filter_date_day_accepts_31() {
+            GetWallpapersRequestQueryBuilder::new().filter_date_day(1);
+        }
+
+        #[test]
+        #[should_panic(expected = "Filter date month must be between 1 and 12.")]
+        fn test_get_wallpapers_request_query_builder_filter_date_month_rejects_less_than_1() {
+            GetWallpapersRequestQueryBuilder::new().filter_date_month(0);
+        }
+
+        #[test]
+        #[should_panic(expected = "Filter date month must be between 1 and 12.")]
+        fn test_get_wallpapers_request_query_builder_filter_date_month_rejects_greater_than_31() {
+            GetWallpapersRequestQueryBuilder::new().filter_date_month(32);
+        }
+
+        #[test]
+        fn test_get_wallpapers_request_query_builder_filter_date_month_accepts_1() {
+            GetWallpapersRequestQueryBuilder::new().filter_date_month(1);
+        }
+
+        #[test]
+        fn test_get_wallpapers_request_query_builder_filter_date_month_accepts_31() {
+            GetWallpapersRequestQueryBuilder::new().filter_date_month(1);
+        }
+
+        #[test]
+        #[should_panic(expected = "Filter date year must be from 1997 inclusive.")]
+        fn test_get_wallpapers_request_query_builder_filter_date_year_rejects_less_than_1997() {
+            GetWallpapersRequestQueryBuilder::new().filter_date_year(1996);
+        }
+
+        #[test]
+        fn test_get_wallpapers_request_query_builder_filter_date_month_accepts_1997() {
+            GetWallpapersRequestQueryBuilder::new().filter_date_year(1997);
+        }
+
+        #[test]
+        #[should_panic(expected = "Filter rating must be between 1 and 5.")]
+        fn test_get_wallpapers_request_query_builder_filter_rating_rejects_less_than_1() {
+            GetWallpapersRequestQueryBuilder::new().filter_rating(0.99);
+        }
+
+        #[test]
+        #[should_panic(expected = "Filter rating must be between 1 and 5.")]
+        fn test_get_wallpapers_request_query_builder_filter_rating_rejects_greater_than_5() {
+            GetWallpapersRequestQueryBuilder::new().filter_rating(5.01);
+        }
+
+        #[test]
+        fn test_get_wallpapers_request_query_builder_filter_rating_accepts_1() {
+            GetWallpapersRequestQueryBuilder::new().filter_rating(1_f32);
+        }
+
+        #[test]
+        fn test_get_wallpapers_request_query_builder_filter_rating_accepts_5() {
+            GetWallpapersRequestQueryBuilder::new().filter_rating(5_f32);
+        }
+
+        #[test]
+        #[should_panic(expected = "Limit must be between 1 and 50.")]
+        fn test_get_wallpapers_request_query_builder_limit_rejects_less_than_1() {
+            GetWallpapersRequestQueryBuilder::new().limit(0);
+        }
+
+        #[test]
+        #[should_panic(expected = "Limit must be between 1 and 50.")]
+        fn test_get_wallpapers_request_query_builder_limit_rejects_greater_than_50() {
+            GetWallpapersRequestQueryBuilder::new().limit(51);
+        }
+
+        #[test]
+        fn test_get_wallpapers_request_query_builder_limit_accepts_1() {
+            GetWallpapersRequestQueryBuilder::new().limit(1);
+        }
+
+        #[test]
+        fn test_get_wallpapers_request_query_builder_limit_accepts_50() {
+            GetWallpapersRequestQueryBuilder::new().limit(50);
+        }
+
+        #[test]
+        #[should_panic(expected = "Page must be greater than 0.")]
+        fn test_get_wallpapers_request_query_builder_page_rejects_less_than_1() {
+            GetWallpapersRequestQueryBuilder::new().page(0);
+        }
+
+        #[test]
+        fn test_get_wallpapers_request_query_builder_page_accepts_1() {
+            GetWallpapersRequestQueryBuilder::new().page(1);
+        }
+    }
+}
