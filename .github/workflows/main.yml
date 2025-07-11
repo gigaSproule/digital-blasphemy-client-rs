@@ -53,15 +53,15 @@ jobs:
         uses: actions/checkout@v4
       - name: Setup rust
         uses: actions-rust-lang/setup-rust-toolchain@v1
-      - name: Run tests
-        if: github.ref_type != 'tags'
-        run: cargo test
       - name: Run release build
         if: github.ref_type == 'tags'
         run: cargo build --release
       - name: Run build
         if: github.ref_type != 'tags'
         run: cargo build
+      - name: Run tests
+        if: github.ref_type != 'tags'
+        run: cargo test
   release-dry-run:
     runs-on: "ubuntu-latest"
     timeout-minutes: 30
