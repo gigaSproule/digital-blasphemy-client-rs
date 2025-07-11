@@ -39,126 +39,36 @@ jobs:
         uses: actions-rust-lang/setup-rust-toolchain@v1
       - name: Run lint
         run: cargo clippy --all-features --all-targets
-  test-linux:
-    runs-on: "ubuntu-latest"
+  test-build:
+    strategy:
+      matrix:
+        os:
+          - ubuntu-latest
+          - macos-latest
+          - windows-latest
+    runs-on: ${{ matrix.os }}
     timeout-minutes: 30
-    if: github.ref_type != 'tags'
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Run tests
+      - name: Setup rust
         uses: actions-rust-lang/setup-rust-toolchain@v1
       - name: Run tests
+        if: github.ref_type != 'tags'
         run: cargo test
-  test-windows:
-    runs-on: "windows-latest"
-    timeout-minutes: 30
-    if: github.ref_type != 'tags'
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: Setup rust
-        uses: actions-rust-lang/setup-rust-toolchain@v1
-      - name: Run tests
-        run: cargo test
-  test-macos:
-    runs-on: "macos-latest"
-    timeout-minutes: 30
-    if: github.ref_type != 'tags'
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: Setup rust
-        uses: actions-rust-lang/setup-rust-toolchain@v1
-      - name: Run tests
-        run: cargo test
-  build-linux:
-    runs-on: "ubuntu-latest"
-    timeout-minutes: 30
-    if: github.event_name != 'pull_request' && !failure()
-    needs:
-      - test-linux
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: Setup rust
-        uses: actions-rust-lang/setup-rust-toolchain@v1
       - name: Run build
+        if: github.event_name != 'pull_request' && !failure()
         run: cargo build --release
-      - name: Rename binary
-        run: mv target/release/libdigital_blasphemy_client.rlib target/release/libdigital_blasphemy_client_linux.rlib
-      - name: Temporarily save linux binary
-        uses: actions/upload-artifact@v4
-        with:
-          name: digital-blasphemy-client-linux
-          path: target/release/libdigital_blasphemy_client_linux.rlib
-          retention-days: 1
-  build-windows:
-    runs-on: "windows-latest"
-    timeout-minutes: 30
-    if: github.event_name != 'pull_request' && !failure()
-    needs:
-      - test-windows
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: Setup rust
-        uses: actions-rust-lang/setup-rust-toolchain@v1
-      - name: Run build
-        run: cargo build --release
-      - name: Rename binary
-        run: mv target\release\libdigital_blasphemy_client.rlib target\release\libdigital_blasphemy_client_windows.rlib
-      - name: Temporarily save windows binary
-        uses: actions/upload-artifact@v4
-        with:
-          name: digital-blasphemy-client-windows
-          path: target\release\libdigital_blasphemy_client_windows.rlib
-          retention-days: 1
-  build-macos:
-    runs-on: "macos-latest"
-    timeout-minutes: 30
-    if: github.event_name != 'pull_request' && !failure()
-    needs:
-      - test-macos
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: Setup rust
-        uses: actions-rust-lang/setup-rust-toolchain@v1
-      - name: Run build
-        run: cargo build --release
-      - name: Rename binary
-        run: mv target/release/libdigital_blasphemy_client.rlib target/release/libdigital_blasphemy_client_macos.rlib
-      - name: Temporarily save mac os binary
-        uses: actions/upload-artifact@v4
-        with:
-          name: digital-blasphemy-client-macos
-          path: target/release/libdigital_blasphemy_client_macos.rlib
-          retention-days: 1
   release:
     runs-on: "ubuntu-latest"
     timeout-minutes: 30
     needs:
-      - build-linux
-      - build-windows
-      - build-macos
+      - test-build
     steps:
       - name: Checkout
         uses: actions/checkout@v4
       - name: Setup rust
         uses: actions-rust-lang/setup-rust-toolchain@v1
-      - name: Retrieve saved linux binary
-        uses: actions/download-artifact@v4
-        with:
-          name: digital-blasphemy-client-linux
-      - name: Retrieve saved windows binary
-        uses: actions/download-artifact@v4
-        with:
-          name: digital-blasphemy-client-windows
-      - name: Retrieve saved mac os binary
-        uses: actions/download-artifact@v4
-        with:
-          name: digital-blasphemy-client-macos
       - name: Set version
         if: ${{ github.ref_type == 'tag' }}
         run: |
@@ -181,6 +91,5 @@ jobs:
         if: ${{ github.ref_type == 'tag' }}
         uses: ncipollo/release-action@v1.18.0
         with:
-          artifacts: libdigital_blasphemy_client_linux.rlib,libdigital_blasphemy_client_macos.rlib,libdigital_blasphemy_client_windows.rlib
           generateReleaseNotes: true
           makeLatest: true
