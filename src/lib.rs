@@ -17,6 +17,7 @@ use std::path::Path;
 pub struct DigitalBlasphemyClient {
     authorization: String,
     client: reqwest::Client,
+    base_url: String,
 }
 
 impl DigitalBlasphemyClient {
@@ -24,6 +25,7 @@ impl DigitalBlasphemyClient {
         Ok(DigitalBlasphemyClient {
             authorization: format!("Bearer {api_key}"),
             client: reqwest::Client::builder().build()?,
+            base_url: "https://api.digitalblasphemy.com".to_string(),
         })
     }
 
@@ -33,7 +35,7 @@ impl DigitalBlasphemyClient {
         let get_account_information_response = self
             .get_request_json::<GetAccountInformationResponse>(
                 &vec![],
-                "https://api.digitalblasphemy.com/v2/core/account".to_string(),
+                format!("{}/v2/core/account", self.base_url),
             )
             .await?;
         Ok(get_account_information_response)
@@ -46,7 +48,7 @@ impl DigitalBlasphemyClient {
         let get_wallpaper_response = self
             .get_request_json::<GetWallpapersResponse>(
                 &Self::get_wallpapers_query(&request),
-                "https://api.digitalblasphemy.com/v2/core/wallpapers".to_string(),
+                format!("{}/v2/core/wallpapers", self.base_url),
             )
             .await?;
         Ok(get_wallpaper_response)
@@ -125,8 +127,8 @@ impl DigitalBlasphemyClient {
             .get_request_json::<GetWallpaperResponse>(
                 &Self::get_wallpaper_query(request),
                 format!(
-                    "https://api.digitalblasphemy.com/v2/core/wallpaper/{}",
-                    request.wallpaper_id
+                    "{}/v2/core/wallpaper/{}",
+                    self.base_url, request.wallpaper_id
                 ),
             )
             .await?;
@@ -170,7 +172,8 @@ impl DigitalBlasphemyClient {
             .get_request_json::<DownloadWallpaperResponse>(
                 &Self::download_query(&request),
                 format!(
-                    "https://api.digitalblasphemy.com/v2/core/download/wallpaper/{}/{}/{}/{}",
+                    "{}/v2/core/download/wallpaper/{}/{}/{}/{}",
+                    self.base_url,
                     request.wallpaper_type.as_str(),
                     request.width,
                     request.height,
@@ -229,15 +232,15 @@ impl DigitalBlasphemyClient {
         headers.insert("Accept", "application/json".parse().unwrap());
         headers.insert("Authorization", self.authorization.parse().unwrap());
 
-        let download_request = self
+        let request = self
             .client
             .request(reqwest::Method::GET, url)
             .query(&query)
             .headers(headers.clone());
 
-        Self::debug_log(&download_request);
+        Self::debug_log(&request);
 
-        let response = download_request.send().await;
+        let response = request.send().await;
 
         if response.is_err() {
             let error = response.unwrap_err();
