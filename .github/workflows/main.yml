@@ -56,9 +56,12 @@ jobs:
       - name: Run tests
         if: github.ref_type != 'tags'
         run: cargo test
-      - name: Run build
-        if: github.event_name != 'pull_request' && !failure()
+      - name: Run release build
+        if: github.ref_type == 'tags'
         run: cargo build --release
+      - name: Run build
+        if: github.ref_type != 'tags'
+        run: cargo build
   release-dry-run:
     runs-on: "ubuntu-latest"
     timeout-minutes: 30
