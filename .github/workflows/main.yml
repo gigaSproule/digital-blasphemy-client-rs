@@ -117,7 +117,6 @@ jobs:
           git commit -m "chore: set version to ${{ steps.next-release-version.outputs.next-version }}"
           git push origin HEAD:main
       - name: Create Release
-        if: ${{ github.ref_type == 'tag' }}
         uses: ncipollo/release-action@v1.18.0
         with:
           generateReleaseNotes: true
