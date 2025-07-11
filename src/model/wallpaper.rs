@@ -5,10 +5,12 @@ use std::collections::HashMap;
 pub struct Wallpaper {
     pub id: u16,
     pub all_free: Option<bool>,
+    pub comments: Option<Comments>,
     pub content: Option<String>,
     pub free: Option<bool>,
     pub name: String,
     pub paths: Paths,
+    pub pickle_jar: Option<PickleJar>,
     pub rating: Option<String>, // f64
     pub resolutions: Option<Resolutions>,
     pub sku: Option<String>,
@@ -17,10 +19,31 @@ pub struct Wallpaper {
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct Comments {
+    pub comments: Vec<Comment>,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct Comment {
+    pub id: String,
+    pub author_id: String,
+    pub author_display: String,
+    pub content: String,
+    pub rating: String,
+    pub timestamp: i64,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Paths {
     pub api: String,
     pub thumb: String,
     pub web: String,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct PickleJar {
+    pub parent: String,
+    pub siblings: Vec<String>,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]

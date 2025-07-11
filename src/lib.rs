@@ -7,7 +7,7 @@ pub use crate::model::{
     GetWallpaperResponse, GetWallpapersOrderBy, GetWallpapersRequest, GetWallpapersResponse,
     Wallpaper,
 };
-use log::{Level, debug, log_enabled};
+use log::{debug, log_enabled, Level};
 use reqwest::{RequestBuilder, Response, StatusCode};
 use std::error::Error;
 use std::fs::OpenOptions;
@@ -25,6 +25,18 @@ impl DigitalBlasphemyClient {
             authorization: format!("Bearer {api_key}"),
             client: reqwest::Client::builder().build()?,
         })
+    }
+
+    pub async fn get_user_information(
+        &self,
+    ) -> Result<GetAccountInformationResponse, ErrorResponse> {
+        let get_account_information_response = self
+            .get_request_json::<GetAccountInformationResponse>(
+                &vec![],
+                "https://api.digitalblasphemy.com/v2/core/account".to_string(),
+            )
+            .await?;
+        Ok(get_account_information_response)
     }
 
     pub async fn get_wallpapers(
@@ -199,13 +211,13 @@ impl DigitalBlasphemyClient {
         query: &Vec<(&str, String)>,
         url: String,
     ) -> Result<T, ErrorResponse> {
-        let download_wallpaper_response = self
+        let response = self
             .get_request(query, url)
             .await?
             .json::<T>()
             .await
             .expect("Unable to parse the body as JSON");
-        Ok(download_wallpaper_response)
+        Ok(response)
     }
 
     async fn get_request(
