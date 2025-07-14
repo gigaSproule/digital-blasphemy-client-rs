@@ -4,5 +4,5 @@ use serde::{Deserialize, Serialize};
 pub struct ErrorResponse {
     pub code: u64,
     pub description: String,
-    pub errors: Vec<String>,
+    pub errors: Option<Vec<String>>,
 }

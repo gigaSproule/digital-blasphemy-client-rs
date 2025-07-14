@@ -29,6 +29,18 @@ impl DigitalBlasphemyClient {
         })
     }
 
+    // For test purposes only
+    pub(crate) fn new_test(
+        api_key: String,
+        base_url: String,
+    ) -> Result<DigitalBlasphemyClient, Box<dyn Error>> {
+        Ok(DigitalBlasphemyClient {
+            authorization: format!("Bearer {api_key}"),
+            client: reqwest::Client::builder().build()?,
+            base_url: base_url,
+        })
+    }
+
     pub async fn get_user_information(
         &self,
     ) -> Result<GetAccountInformationResponse, ErrorResponse> {
@@ -246,7 +258,7 @@ impl DigitalBlasphemyClient {
             return Err(ErrorResponse {
                 code: status.as_u16() as u64,
                 description: status.canonical_reason().unwrap().to_string(),
-                errors: vec![error.source().unwrap().to_string()],
+                errors: Some(vec![error.source().unwrap().to_string()]),
             });
         }
 
@@ -260,12 +272,12 @@ impl DigitalBlasphemyClient {
                         .canonical_reason()
                         .unwrap()
                         .to_string(),
-                    errors: vec![
+                    errors: Some(vec![
                         unwrapped_response
                             .text()
                             .await
                             .expect("Unable to parse the body as text"),
-                    ],
+                    ]),
                 });
             }
             return Err(unwrapped_response
@@ -281,5 +293,82 @@ impl DigitalBlasphemyClient {
         if log_enabled!(Level::Debug) {
             debug!("{:?}", request.try_clone().unwrap().build().unwrap());
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[tokio::test]
+    async fn get_user_information_can_map_successful_response() -> Result<(), Box<dyn Error>> {
+        let mut server = mockito::Server::new_async().await;
+
+        let mock = server
+            .mock("GET", "/v2/core/account")
+            .with_status(200)
+            .with_header("content-type", "application/json")
+            .with_body(
+                r#"{
+                "db_core": {
+                    "timestamp": 1
+                },
+                "user": {
+                    "active": true,
+                    "display_name": "username",
+                    "id": 2,
+                    "lifetime": true,
+                    "plus": true
+                }
+            }"#,
+            )
+            .create_async()
+            .await;
+
+        let client =
+            DigitalBlasphemyClient::new_test("api_key".to_string(), server.url().to_string())?;
+
+        let user_information = client.get_user_information().await.unwrap();
+
+        assert_eq!(user_information.db_core.timestamp, 1);
+        assert!(user_information.user.active);
+        assert_eq!(user_information.user.display_name, "username".to_string());
+        assert_eq!(user_information.user.id, 2);
+        assert!(user_information.user.lifetime);
+        assert!(user_information.user.plus);
+
+        mock.assert_async().await;
+
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn get_user_information_can_map_error_response() -> Result<(), Box<dyn Error>> {
+        let mut server = mockito::Server::new_async().await;
+
+        let mock = server
+            .mock("GET", "/v2/core/account")
+            .with_status(401)
+            .with_header("content-type", "application/json")
+            .with_body(
+                r#"{
+                "code": 401,
+                "description": "Unauthorized"
+            }"#,
+            )
+            .create_async()
+            .await;
+
+        let client =
+            DigitalBlasphemyClient::new_test("api_key".to_string(), server.url().to_string())?;
+
+        let error = client.get_user_information().await.unwrap_err();
+
+        assert_eq!(error.code, 401);
+        assert_eq!(error.description, "Unauthorized".to_string());
+
+        mock.assert_async().await;
+
+        Ok(())
     }
 }
