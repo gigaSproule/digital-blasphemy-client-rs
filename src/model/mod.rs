@@ -8,12 +8,8 @@ mod get_wallpapers;
 mod wallpaper;
 
 pub use common::*;
-// TODO: Remove allow unused imports when tests are implemented
-#[allow(unused_imports)]
 pub use common_response::*;
 pub use download_wallpaper::*;
-// TODO: Remove allow unused imports when tests are implemented
-#[allow(unused_imports)]
 pub use error::*;
 pub use get_account_information::*;
 pub use get_wallpaper::*;

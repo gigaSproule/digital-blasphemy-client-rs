@@ -117,12 +117,10 @@ impl DigitalBlasphemyClient {
         query
     }
 
-    // TODO: Remove allow dead code when tests are implemented
-    #[allow(dead_code)]
     pub async fn get_wallpaper(
         &self,
         request: &GetWallpaperRequest,
-    ) -> Result<Wallpaper, ErrorResponse> {
+    ) -> Result<Option<Wallpaper>, ErrorResponse> {
         let get_wallpaper_response = self
             .get_request_json::<GetWallpaperResponse>(
                 &Self::get_wallpaper_query(request),

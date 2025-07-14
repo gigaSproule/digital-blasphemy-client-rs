@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 #[derive(Serialize, Deserialize, Debug)]
 pub struct GetWallpaperResponse {
     pub db_core: GetWallpaperDBCore,
-    pub wallpaper: Wallpaper,
+    pub wallpaper: Option<Wallpaper>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -50,23 +50,17 @@ pub struct GetWallpaperRequest {
     pub show_resolutions: bool,
 }
 
-// TODO: Remove allow dead code when tests are implemented
-#[allow(dead_code)]
 impl GetWallpaperRequest {
     pub fn builder() -> GetWallpaperRequestBuilder {
         GetWallpaperRequestBuilder::new()
     }
 }
 
-// TODO: Remove allow dead code when tests are implemented
-#[allow(dead_code)]
 #[derive(Clone)]
 pub struct GetWallpaperRequestBuilder {
     get_wallpaper_request: GetWallpaperRequest,
 }
 
-// TODO: Remove allow dead code when tests are implemented
-#[allow(dead_code)]
 impl GetWallpaperRequestBuilder {
     pub(crate) fn new() -> Self {
         GetWallpaperRequestBuilder {
@@ -85,6 +79,9 @@ impl GetWallpaperRequestBuilder {
     }
 
     pub fn build(self) -> GetWallpaperRequest {
+        if self.get_wallpaper_request.wallpaper_id == 0 {
+            panic!("Wallpaper ID must be provided.");
+        }
         self.get_wallpaper_request
     }
 
@@ -118,7 +115,7 @@ impl GetWallpaperRequestBuilder {
         mut self,
         filter_res_operator_width: Operator,
     ) -> GetWallpaperRequestBuilder {
-        self.get_wallpaper_request.filter_res_operator_height = filter_res_operator_width;
+        self.get_wallpaper_request.filter_res_operator_width = filter_res_operator_width;
         self
     }
 
@@ -140,5 +137,78 @@ impl GetWallpaperRequestBuilder {
     pub fn show_resolutions(mut self, show_resolutions: bool) -> GetWallpaperRequestBuilder {
         self.get_wallpaper_request.show_resolutions = show_resolutions;
         self
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    mod get_wallpaper_request_builder_test {
+        use super::*;
+
+        #[test]
+        #[should_panic(expected = "Wallpaper ID must be provided.")]
+        fn test_get_wallpaper_request_builder_rejects_build_when_wallpaper_id_not_provided() {
+            GetWallpaperRequest::builder().build();
+        }
+
+        #[test]
+        fn test_get_wallpaper_request_builder_sets_defaults() {
+            let get_wallpaper_request = GetWallpaperRequest::builder().wallpaper_id(1).build();
+
+            assert_eq!(get_wallpaper_request.wallpaper_id, 1);
+            assert_eq!(get_wallpaper_request.filter_res_height, 0);
+            assert_eq!(
+                get_wallpaper_request.filter_res_operator,
+                Operator::GreaterThanOrEqual
+            );
+            assert_eq!(
+                get_wallpaper_request.filter_res_operator_height,
+                Operator::GreaterThanOrEqual
+            );
+            assert_eq!(
+                get_wallpaper_request.filter_res_operator_width,
+                Operator::GreaterThanOrEqual
+            );
+            assert_eq!(get_wallpaper_request.filter_res_width, 0);
+            assert_eq!(get_wallpaper_request.show_comments, false);
+            assert_eq!(get_wallpaper_request.show_pickle_jar, false);
+            assert_eq!(get_wallpaper_request.show_resolutions, true);
+        }
+
+        #[test]
+        fn test_get_wallpaper_request_builder_overrides_all_defaults() {
+            let get_wallpaper_request = GetWallpaperRequest::builder()
+                .wallpaper_id(1)
+                .filter_res_height(100)
+                .filter_res_operator(Operator::LessThan)
+                .filter_res_operator_height(Operator::LessThan)
+                .filter_res_operator_width(Operator::LessThan)
+                .filter_res_width(200)
+                .show_comments(true)
+                .show_pickle_jar(true)
+                .show_resolutions(false)
+                .build();
+
+            assert_eq!(get_wallpaper_request.wallpaper_id, 1);
+            assert_eq!(get_wallpaper_request.filter_res_height, 100);
+            assert_eq!(
+                get_wallpaper_request.filter_res_operator,
+                Operator::LessThan
+            );
+            assert_eq!(
+                get_wallpaper_request.filter_res_operator_height,
+                Operator::LessThan
+            );
+            assert_eq!(
+                get_wallpaper_request.filter_res_operator_width,
+                Operator::LessThan
+            );
+            assert_eq!(get_wallpaper_request.filter_res_width, 200);
+            assert_eq!(get_wallpaper_request.show_comments, true);
+            assert_eq!(get_wallpaper_request.show_pickle_jar, true);
+            assert_eq!(get_wallpaper_request.show_resolutions, false);
+        }
     }
 }
