@@ -30,6 +30,7 @@ impl DigitalBlasphemyClient {
     }
 
     // For test purposes only
+    #[allow(dead_code)]
     pub(crate) fn new_test(
         api_key: String,
         base_url: String,
@@ -37,7 +38,7 @@ impl DigitalBlasphemyClient {
         Ok(DigitalBlasphemyClient {
             authorization: format!("Bearer {api_key}"),
             client: reqwest::Client::builder().build()?,
-            base_url: base_url,
+            base_url,
         })
     }
 
