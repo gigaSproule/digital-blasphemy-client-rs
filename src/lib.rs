@@ -29,8 +29,7 @@ impl DigitalBlasphemyClient {
         })
     }
 
-    // For test purposes only
-    #[allow(dead_code)]
+    #[cfg(test)]
     pub(crate) fn new_test(
         api_key: String,
         base_url: String,
