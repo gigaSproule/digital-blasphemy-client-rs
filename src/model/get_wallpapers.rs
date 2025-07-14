@@ -442,9 +442,9 @@ mod tests {
             assert_eq!(get_wallpapers_request.order_by, GetWallpapersOrderBy::Date);
             assert_eq!(get_wallpapers_request.page, 1);
             assert_eq!(get_wallpapers_request.s, "".to_string());
-            assert_eq!(get_wallpapers_request.show_comments, false);
-            assert_eq!(get_wallpapers_request.show_pickle_jar, false);
-            assert_eq!(get_wallpapers_request.show_resolutions, true);
+            assert!(!get_wallpapers_request.show_comments);
+            assert!(!get_wallpapers_request.show_pickle_jar);
+            assert!(get_wallpapers_request.show_resolutions);
         }
 
         #[test]
@@ -506,9 +506,9 @@ mod tests {
             assert_eq!(get_wallpapers_request.order_by, GetWallpapersOrderBy::Name);
             assert_eq!(get_wallpapers_request.page, 10);
             assert_eq!(get_wallpapers_request.s, "search".to_string());
-            assert_eq!(get_wallpapers_request.show_comments, true);
-            assert_eq!(get_wallpapers_request.show_pickle_jar, true);
-            assert_eq!(get_wallpapers_request.show_resolutions, false);
+            assert!(get_wallpapers_request.show_comments);
+            assert!(get_wallpapers_request.show_pickle_jar);
+            assert!(!get_wallpapers_request.show_resolutions);
         }
     }
 }

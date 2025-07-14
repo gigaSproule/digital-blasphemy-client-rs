@@ -158,7 +158,7 @@ mod tests {
             assert_eq!(download_wallpaper_request.width, 1);
             assert_eq!(download_wallpaper_request.height, 2);
             assert_eq!(download_wallpaper_request.wallpaper_id, 3);
-            assert_eq!(download_wallpaper_request.show_watermark, true);
+            assert!(download_wallpaper_request.show_watermark);
         }
 
         #[test]
@@ -178,7 +178,7 @@ mod tests {
             assert_eq!(download_wallpaper_request.width, 4);
             assert_eq!(download_wallpaper_request.height, 5);
             assert_eq!(download_wallpaper_request.wallpaper_id, 6);
-            assert_eq!(download_wallpaper_request.show_watermark, false);
+            assert!(!download_wallpaper_request.show_watermark);
         }
     }
 }

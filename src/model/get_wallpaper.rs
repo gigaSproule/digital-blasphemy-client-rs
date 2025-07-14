@@ -172,9 +172,9 @@ mod tests {
                 Operator::GreaterThanOrEqual
             );
             assert_eq!(get_wallpaper_request.filter_res_width, 0);
-            assert_eq!(get_wallpaper_request.show_comments, false);
-            assert_eq!(get_wallpaper_request.show_pickle_jar, false);
-            assert_eq!(get_wallpaper_request.show_resolutions, true);
+            assert!(!get_wallpaper_request.show_comments);
+            assert!(!get_wallpaper_request.show_pickle_jar);
+            assert!(get_wallpaper_request.show_resolutions);
         }
 
         #[test]
@@ -206,9 +206,9 @@ mod tests {
                 Operator::LessThan
             );
             assert_eq!(get_wallpaper_request.filter_res_width, 200);
-            assert_eq!(get_wallpaper_request.show_comments, true);
-            assert_eq!(get_wallpaper_request.show_pickle_jar, true);
-            assert_eq!(get_wallpaper_request.show_resolutions, false);
+            assert!(get_wallpaper_request.show_comments);
+            assert!(get_wallpaper_request.show_pickle_jar);
+            assert!(!get_wallpaper_request.show_resolutions);
         }
     }
 }
