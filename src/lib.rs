@@ -7,7 +7,7 @@ pub use crate::model::{
     GetWallpaperResponse, GetWallpapersOrderBy, GetWallpapersRequest, GetWallpapersResponse,
     Wallpaper,
 };
-use log::{debug, log_enabled, Level};
+use log::{Level, debug, log_enabled};
 use reqwest::{RequestBuilder, Response, StatusCode};
 use std::error::Error;
 use std::fs::OpenOptions;
@@ -299,6 +299,7 @@ impl DigitalBlasphemyClient {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use mockito::Matcher;
     use std::collections::HashMap;
     use std::fs;
 
@@ -357,6 +358,69 @@ mod tests {
 
         Ok(())
     }
+
+    #[tokio::test]
+    async fn get_wallpapers_does_not_send_filter_date_day_if_not_provided()
+    -> Result<(), Box<dyn Error>> {
+        let mut server = mockito::Server::new_async().await;
+
+        let get_wallpapers_request = GetWallpapersRequest::builder().build();
+
+        let mock = server
+            .mock(
+                "GET",
+                mockito::Matcher::Regex(r"^/v2/core/wallpapers.*$".to_string()),
+            )
+            .match_query(Matcher::Regex("[^filter_date_day]".to_string()))
+            .with_status(200)
+            .with_header("content-type", "application/json")
+            .with_body(fs::read_to_string(
+                "resources/get_wallpapers_success_fully_populated.json",
+            )?)
+            .create_async()
+            .await;
+
+        let client =
+            DigitalBlasphemyClient::new_test("api_key".to_string(), server.url().to_string())?;
+
+        client.get_wallpapers(get_wallpapers_request).await.unwrap();
+
+        mock.assert_async().await;
+
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn get_wallpapers_does_send_filter_date_day_if_provided() -> Result<(), Box<dyn Error>> {
+        let mut server = mockito::Server::new_async().await;
+
+        let get_wallpapers_request = GetWallpapersRequest::builder().filter_date_day(1).build();
+
+        let mock = server
+            .mock(
+                "GET",
+                mockito::Matcher::Regex(r"^/v2/core/wallpapers.*$".to_string()),
+            )
+            .match_query(Matcher::Regex("filter_date_day=1".to_string()))
+            .with_status(200)
+            .with_header("content-type", "application/json")
+            .with_body(fs::read_to_string(
+                "resources/get_wallpapers_success_fully_populated.json",
+            )?)
+            .create_async()
+            .await;
+
+        let client =
+            DigitalBlasphemyClient::new_test("api_key".to_string(), server.url().to_string())?;
+
+        client.get_wallpapers(get_wallpapers_request).await.unwrap();
+
+        mock.assert_async().await;
+
+        Ok(())
+    }
+
+    // TODO: Add tests for other request builder properties
 
     #[tokio::test]
     async fn get_wallpapers_can_map_successful_response_fully_populated()
