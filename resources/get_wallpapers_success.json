@@ -1,0 +1,116 @@
+{
+  "db_core": {
+    "timestamp": 1752613689,
+    "endpoints": {
+      "api": "https://api.digitalblasphemy.com/v2/core",
+      "image": "https://arcadia.digitalblasphemy.com",
+      "thumb": "https://cdn.digitalblasphemy.com",
+      "web": "https://digitalblasphemy.com"
+    },
+    "request": {
+      "query": {
+        "filter_date_operator": "=",
+        "filter_res_height": 0,
+        "filter_res_operator": ">=",
+        "filter_res_width": 0,
+        "limit": 10,
+        "order": "asc",
+        "order_by": "name",
+        "page": 1,
+        "s": null,
+        "show_comments": false,
+        "show_pickle_jar": false,
+        "show_resolutions": true
+      }
+    },
+    "total_pages": 211,
+    "wallpapers": {
+      "10882": {
+        "id": 10882,
+        "all_free": false,
+        "content": "",
+        "free": false,
+        "name": "Vulcan",
+        "paths": {
+          "api": "/wallpaper/10882",
+          "thumb": "/thumbnail/640x480/vulcan_thumbnail_640x480.jpg",
+          "web": "/sec/vulcan/"
+        },
+        "rating": "0",
+        "resolutions": {
+          "single": [
+            {
+              "label": "1024x768 (4:3)",
+              "width": "1024",
+              "height": "768",
+              "image": "/single/1024x768/vulcan_single_1024x768.jpg"
+            },
+            {
+              "label": "1152x864 (4:3)",
+              "width": "1152",
+              "height": "864",
+              "image": "/single/1152x864/vulcan_single_1152x864.jpg"
+            }
+          ]
+        },
+        "sku": "vulcan",
+        "tags": {
+          "71": {
+            "id": 71,
+            "name": "1997"
+          },
+          "228": {
+            "id": 228,
+            "name": "Legacy"
+          }
+        },
+        "timestamp": 852098400
+      },
+      "10883": {
+        "id": 10883,
+        "all_free": false,
+        "content": "",
+        "free": false,
+        "name": "Valley I",
+        "paths": {
+          "api": "/wallpaper/10883",
+          "thumb": "/thumbnail/640x480/valley_thumbnail_640x480.jpg",
+          "web": "/sec/valley/"
+        },
+        "rating": "0",
+        "resolutions": {
+          "single": [
+            {
+              "label": "1024x768 (4:3)",
+              "width": "1024",
+              "height": "768",
+              "image": "/single/1024x768/valley_single_1024x768.jpg"
+            },
+            {
+              "label": "1152x864 (4:3)",
+              "width": "1152",
+              "height": "864",
+              "image": "/single/1152x864/valley_single_1152x864.jpg"
+            }
+          ]
+        },
+        "sku": "valley",
+        "tags": {
+          "71": {
+            "id": 71,
+            "name": "1997"
+          },
+          "228": {
+            "id": 228,
+            "name": "Legacy"
+          }
+        },
+        "timestamp": 852616800
+      }
+    }
+  },
+  "wallpapers": [
+    10882,
+    10883
+  ]
+}

@@ -299,6 +299,7 @@ impl DigitalBlasphemyClient {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::fs;
 
     #[tokio::test]
     async fn get_user_information_can_map_successful_response() -> Result<(), Box<dyn Error>> {
@@ -308,20 +309,9 @@ mod tests {
             .mock("GET", "/v2/core/account")
             .with_status(200)
             .with_header("content-type", "application/json")
-            .with_body(
-                r#"{
-                "db_core": {
-                    "timestamp": 1
-                },
-                "user": {
-                    "active": true,
-                    "display_name": "username",
-                    "id": 2,
-                    "lifetime": true,
-                    "plus": true
-                }
-            }"#,
-            )
+            .with_body(fs::read_to_string(
+                "resources/get_user_information_success.json",
+            )?)
             .create_async()
             .await;
 
@@ -350,12 +340,7 @@ mod tests {
             .mock("GET", "/v2/core/account")
             .with_status(401)
             .with_header("content-type", "application/json")
-            .with_body(
-                r#"{
-                "code": 401,
-                "description": "Unauthorized"
-            }"#,
-            )
+            .with_body(fs::read_to_string("resources/unauthorised_response.json")?)
             .create_async()
             .await;
 
@@ -366,6 +351,38 @@ mod tests {
 
         assert_eq!(error.code, 401);
         assert_eq!(error.description, "Unauthorized".to_string());
+
+        mock.assert_async().await;
+
+        Ok(())
+    }
+
+    #[ignore = "Not working yet"]
+    #[tokio::test]
+    async fn get_wallpapers_can_map_successful_response() -> Result<(), Box<dyn Error>> {
+        let mut server = mockito::Server::new_async().await;
+
+        let mock = server
+            .mock("GET", "/v2/core/wallpapers")
+            .match_request(|request| request.path_and_query().contains("wall"))
+            .with_status(200)
+            .with_header("content-type", "application/json")
+            .with_body(fs::read_to_string("resources/get_wallpapers_success.json")?)
+            .create_async()
+            .await;
+
+        let client =
+            DigitalBlasphemyClient::new_test("api_key".to_string(), server.url().to_string())?;
+
+        let get_wallpapers_request = GetWallpapersRequest::builder().build();
+        let user_information = client.get_wallpapers(get_wallpapers_request).await.unwrap();
+
+        // assert_eq!(user_information.db_core.timestamp, 1);
+        // assert!(user_information.user.active);
+        // assert_eq!(user_information.user.display_name, "username".to_string());
+        // assert_eq!(user_information.user.id, 2);
+        // assert!(user_information.user.lifetime);
+        // assert!(user_information.user.plus);
 
         mock.assert_async().await;
 

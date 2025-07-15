@@ -1,0 +1,12 @@
+{
+  "db_core": {
+    "timestamp": 1
+  },
+  "user": {
+    "active": true,
+    "display_name": "username",
+    "id": 2,
+    "lifetime": true,
+    "plus": true
+  }
+}
