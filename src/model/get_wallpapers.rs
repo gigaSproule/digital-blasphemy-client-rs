@@ -6,12 +6,12 @@ use crate::{
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, PartialEq)]
 pub struct GetWallpapersResponse {
     pub db_core: GetWallpapersDBCore,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, PartialEq)]
 pub struct GetWallpapersDBCore {
     pub timestamp: i64,
     pub endpoints: Endpoints,
@@ -20,12 +20,12 @@ pub struct GetWallpapersDBCore {
     pub wallpapers: HashMap<String, Wallpaper>,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, PartialEq)]
 pub struct GetWallpapersDBCoreRequest {
     pub query: GetWallpapersResponseQuery,
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 pub struct GetWallpapersResponseQuery {
     pub filter_date_day: Option<u8>,
     pub filter_date_month: Option<u8>,

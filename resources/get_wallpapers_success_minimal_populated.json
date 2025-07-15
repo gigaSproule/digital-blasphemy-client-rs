@@ -1,0 +1,84 @@
+{
+  "db_core": {
+    "timestamp": 1,
+    "endpoints": {
+      "api": "https://api.digitalblasphemy.com/v2/core",
+      "image": "https://arcadia.digitalblasphemy.com",
+      "thumb": "https://cdn.digitalblasphemy.com",
+      "web": "https://digitalblasphemy.com"
+    },
+    "request": {
+      "query": {
+        "filter_date_operator": "=",
+        "filter_res_height": 2,
+        "filter_res_operator": ">=",
+        "filter_res_width": 3,
+        "limit": 4,
+        "order": "asc",
+        "order_by": "name",
+        "page": 5,
+        "show_comments": false,
+        "show_pickle_jar": false,
+        "show_resolutions": false
+      }
+    },
+    "total_pages": 6,
+    "wallpapers": {
+      "7": {
+        "id": 7,
+        "name": "Vulcan",
+        "paths": {
+          "api": "/wallpaper/13",
+          "thumb": "/thumbnail/21x22/vulcan_thumbnail_21x22.jpg",
+          "web": "/sec/vulcan/"
+        },
+        "rating": "8",
+        "resolutions": {
+          "single": [
+            {
+              "label": "9x10",
+              "width": "9",
+              "height": "10",
+              "image": "/single/9x10/vulcan_single_9x10.jpg"
+            },
+            {
+              "label": "11x12",
+              "width": "11",
+              "height": "12",
+              "image": "/single/11x12/vulcan_single_11x12.jpg"
+            }
+          ]
+        }
+      },
+      "13": {
+        "id": 13,
+        "name": "Valley I",
+        "paths": {
+          "api": "/wallpaper/13",
+          "thumb": "/thumbnail/14x15/valley_thumbnail_14x15.jpg",
+          "web": "/sec/valley/"
+        },
+        "resolutions": {
+          "single": [
+            {
+              "label": "14x15",
+              "width": "14",
+              "height": "15",
+              "image": "/single/14x15/valley_single_14x15.jpg"
+            },
+            {
+              "label": "16x17",
+              "width": "16",
+              "height": "17",
+              "image": "/single/16x17/valley_single_16x17.jpg"
+            }
+          ]
+        }
+      }
+    }
+  },
+  "wallpapers": [
+    13,
+    38
+  ]
+}
