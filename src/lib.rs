@@ -7,7 +7,7 @@ pub use crate::model::{
     GetWallpaperResponse, GetWallpapersOrderBy, GetWallpapersRequest, GetWallpapersResponse,
     Wallpaper,
 };
-use log::{debug, log_enabled, Level};
+use log::{Level, debug, log_enabled};
 use reqwest::{RequestBuilder, Response, StatusCode};
 use std::error::Error;
 use std::fs::OpenOptions;
@@ -304,7 +304,6 @@ mod tests {
     use std::fs;
 
     // TODO: Need to test for path parameters
-    // TODO: Need to test for error response
 
     mod get_user_information {
         use super::*;
@@ -340,7 +339,8 @@ mod tests {
         }
 
         #[tokio::test]
-        async fn get_user_information_can_map_error_response() -> Result<(), Box<dyn Error>> {
+        async fn get_user_information_can_map_unauthorised_response() -> Result<(), Box<dyn Error>>
+        {
             let mut server = mockito::Server::new_async().await;
 
             let mock = server
@@ -361,6 +361,23 @@ mod tests {
             mock.assert_async().await;
 
             Ok(())
+        }
+
+        #[tokio::test]
+        #[should_panic(expected = "Unable to parse the body as JSON Error Response")]
+        async fn get_user_information_can_map_unknown_error_response() {
+            let mut server = mockito::Server::new_async().await;
+
+            server
+                .mock("GET", "/v2/core/account")
+                .with_status(405)
+                .create_async()
+                .await;
+
+            let client =
+                DigitalBlasphemyClient::new_test("api_key".to_string(), server.url()).unwrap();
+
+            let _ = client.get_user_information().await.unwrap_err();
         }
     }
 
@@ -2228,6 +2245,104 @@ mod tests {
 
             Ok(())
         }
+
+        #[tokio::test]
+        async fn get_wallpapers_can_map_unauthorised_response() -> Result<(), Box<dyn Error>> {
+            let mut server = mockito::Server::new_async().await;
+
+            let get_wallpapers_request = GetWallpapersRequest::builder().build();
+
+            let mock = server
+                .mock(
+                    "GET",
+                    Matcher::Regex(r"^/v2/core/wallpapers.*$".to_string()),
+                )
+                .with_status(401)
+                .with_header("content-type", "application/json")
+                .with_body(fs::read_to_string("resources/unauthorised_response.json")?)
+                .create_async()
+                .await;
+
+            let client = DigitalBlasphemyClient::new_test("api_key".to_string(), server.url())?;
+
+            let error = client
+                .get_wallpapers(&get_wallpapers_request)
+                .await
+                .unwrap_err();
+
+            assert_eq!(error.code, 401);
+            assert_eq!(error.description, "Unauthorized".to_string());
+
+            mock.assert_async().await;
+
+            Ok(())
+        }
+
+        #[tokio::test]
+        async fn get_wallpapers_can_map_bad_request_response() -> Result<(), Box<dyn Error>> {
+            let mut server = mockito::Server::new_async().await;
+
+            let get_wallpapers_request = GetWallpapersRequest::builder().build();
+
+            let mock = server
+                .mock(
+                    "GET",
+                    Matcher::Regex(r"^/v2/core/wallpapers.*$".to_string()),
+                )
+                .with_status(400)
+                .with_header("content-type", "application/json")
+                .with_body(fs::read_to_string(
+                    "resources/get_wallpapers_bad_request.json",
+                )?)
+                .create_async()
+                .await;
+
+            let client = DigitalBlasphemyClient::new_test("api_key".to_string(), server.url())?;
+
+            let error = client
+                .get_wallpapers(&get_wallpapers_request)
+                .await
+                .unwrap_err();
+
+            assert_eq!(error.code, 400);
+            assert_eq!(error.description, "Bad Request".to_string());
+            assert_eq!(
+                error.errors.unwrap(),
+                vec![
+                    "\"filter_date_day\" must be less than or equal to 31",
+                    "\"limit\" must be greater than or equal to 1"
+                ]
+            );
+
+            mock.assert_async().await;
+
+            Ok(())
+        }
+
+        #[tokio::test]
+        #[should_panic(expected = "Unable to parse the body as JSON Error Response")]
+        async fn get_wallpapers_can_map_unknown_error_response() {
+            let mut server = mockito::Server::new_async().await;
+
+            let get_wallpapers_request = GetWallpapersRequest::builder().build();
+
+            server
+                .mock(
+                    "GET",
+                    Matcher::Regex(r"^/v2/core/wallpapers.*$".to_string()),
+                )
+                .with_status(405)
+                .create_async()
+                .await;
+
+            let client =
+                DigitalBlasphemyClient::new_test("api_key".to_string(), server.url()).unwrap();
+
+            let _ = client
+                .get_wallpapers(&get_wallpapers_request)
+                .await
+                .unwrap_err();
+        }
     }
 
     mod get_wallpaper {
@@ -2865,12 +2980,100 @@ mod tests {
 
             Ok(())
         }
+
+        #[tokio::test]
+        async fn get_wallpaper_can_map_unauthorised_response() -> Result<(), Box<dyn Error>> {
+            let mut server = mockito::Server::new_async().await;
+
+            let get_wallpaper_request = GetWallpaperRequest::builder().wallpaper_id(1).build();
+
+            let mock = server
+                .mock("GET", Matcher::Regex(r"^/v2/core/wallpaper.*$".to_string()))
+                .with_status(401)
+                .with_header("content-type", "application/json")
+                .with_body(fs::read_to_string("resources/unauthorised_response.json")?)
+                .create_async()
+                .await;
+
+            let client = DigitalBlasphemyClient::new_test("api_key".to_string(), server.url())?;
+
+            let error = client
+                .get_wallpaper(&get_wallpaper_request)
+                .await
+                .unwrap_err();
+
+            assert_eq!(error.code, 401);
+            assert_eq!(error.description, "Unauthorized".to_string());
+
+            mock.assert_async().await;
+
+            Ok(())
+        }
+
+        #[tokio::test]
+        async fn get_wallpaper_can_map_bad_request_response() -> Result<(), Box<dyn Error>> {
+            let mut server = mockito::Server::new_async().await;
+
+            let get_wallpaper_request = GetWallpaperRequest::builder().wallpaper_id(1).build();
+
+            let mock = server
+                .mock("GET", Matcher::Regex(r"^/v2/core/wallpaper.*$".to_string()))
+                .with_status(401)
+                .with_header("content-type", "application/json")
+                .with_body(fs::read_to_string(
+                    "resources/get_wallpaper_bad_request.json",
+                )?)
+                .create_async()
+                .await;
+
+            let client = DigitalBlasphemyClient::new_test("api_key".to_string(), server.url())?;
+
+            let error = client
+                .get_wallpaper(&get_wallpaper_request)
+                .await
+                .unwrap_err();
+
+            assert_eq!(error.code, 400);
+            assert_eq!(error.description, "Bad Request".to_string());
+            assert_eq!(
+                error.errors.unwrap(),
+                vec![
+                    "\"filter_res_height\" must be greater than or equal to 1",
+                    "\"filter_res_width\" must be greater than or equal to 1"
+                ]
+            );
+
+            mock.assert_async().await;
+
+            Ok(())
+        }
+
+        #[tokio::test]
+        #[should_panic(expected = "Unable to parse the body as JSON Error Response")]
+        async fn get_wallpaper_can_map_unknown_error_response() {
+            let mut server = mockito::Server::new_async().await;
+
+            let get_wallpaper_request = GetWallpaperRequest::builder().wallpaper_id(1).build();
+
+            server
+                .mock("GET", Matcher::Regex(r"^/v2/core/wallpaper.*$".to_string()))
+                .with_status(405)
+                .create_async()
+                .await;
+
+            let client =
+                DigitalBlasphemyClient::new_test("api_key".to_string(), server.url()).unwrap();
+
+            let _ = client
+                .get_wallpaper(&get_wallpaper_request)
+                .await
+                .unwrap_err();
+        }
     }
 
     mod download_wallpaper {
-        use std::time::SystemTime;
-
         use super::*;
+        use uuid::Uuid;
 
         #[tokio::test]
         async fn download_wallpaper_does_send_show_watermark_if_not_provided()
@@ -2910,12 +3113,7 @@ mod tests {
 
             let client = DigitalBlasphemyClient::new_test("api_key".to_string(), server.url())?;
 
-            let filename = format!(
-                "./{}.jpg",
-                SystemTime::now()
-                    .duration_since(SystemTime::UNIX_EPOCH)?
-                    .as_nanos()
-            );
+            let filename = format!("./{}.jpg", Uuid::new_v4().to_string());
 
             client
                 .download_wallpaper(&filename, &download_wallpaper_request)
@@ -2969,12 +3167,7 @@ mod tests {
 
             let client = DigitalBlasphemyClient::new_test("api_key".to_string(), server.url())?;
 
-            let filename = format!(
-                "./{}.jpg",
-                SystemTime::now()
-                    .duration_since(SystemTime::UNIX_EPOCH)?
-                    .as_nanos()
-            );
+            let filename = format!("./{}.jpg", Uuid::new_v4().to_string());
 
             client
                 .download_wallpaper(&filename, &download_wallpaper_request)
@@ -3027,12 +3220,7 @@ mod tests {
 
             let client = DigitalBlasphemyClient::new_test("api_key".to_string(), server.url())?;
 
-            let filename = format!(
-                "./{}.jpg",
-                SystemTime::now()
-                    .duration_since(SystemTime::UNIX_EPOCH)?
-                    .as_nanos()
-            );
+            let filename = format!("./{}.jpg", Uuid::new_v4().to_string());
 
             client
                 .download_wallpaper(&filename, &download_wallpaper_request)
@@ -3087,12 +3275,7 @@ mod tests {
 
             let client = DigitalBlasphemyClient::new_test("api_key".to_string(), server.url())?;
 
-            let filename = format!(
-                "./{}.jpg",
-                SystemTime::now()
-                    .duration_since(SystemTime::UNIX_EPOCH)?
-                    .as_nanos()
-            );
+            let filename = format!("./{}.jpg", Uuid::new_v4().to_string());
 
             client
                 .download_wallpaper(&filename, &download_wallpaper_request)
@@ -3107,6 +3290,253 @@ mod tests {
             fs::remove_file(&filename)?;
 
             Ok(())
+        }
+
+        #[tokio::test]
+        async fn download_wallpaper_can_map_unauthorised_response_when_getting_download_wallpaper_response()
+        -> Result<(), Box<dyn Error>> {
+            let mut server = mockito::Server::new_async().await;
+
+            let download_wallpaper_request = DownloadWallpaperRequest::builder()
+                .width(2)
+                .height(3)
+                .wallpaper_id(4)
+                .build();
+
+            let download_wallpaper_mock = server
+                .mock(
+                    "GET",
+                    Matcher::Regex(r"^/v2/core/download/wallpaper.*$".to_string()),
+                )
+                .with_status(401)
+                .with_header("content-type", "application/json")
+                .with_body(fs::read_to_string("resources/unauthorised_response.json")?)
+                .create_async()
+                .await;
+
+            let client = DigitalBlasphemyClient::new_test("api_key".to_string(), server.url())?;
+
+            let filename = format!("./{}.jpg", Uuid::new_v4().to_string());
+
+            let error = client
+                .download_wallpaper(&filename, &download_wallpaper_request)
+                .await
+                .unwrap_err();
+
+            assert_eq!(error.code, 401);
+            assert_eq!(error.description, "Unauthorized".to_string());
+
+            assert!(!fs::exists(&filename)?);
+
+            download_wallpaper_mock.assert_async().await;
+
+            Ok(())
+        }
+
+        #[tokio::test]
+        async fn download_wallpaper_can_map_unauthorised_response_when_downloading_file()
+        -> Result<(), Box<dyn Error>> {
+            let mut server = mockito::Server::new_async().await;
+
+            let download_wallpaper_request = DownloadWallpaperRequest::builder()
+                .width(2)
+                .height(3)
+                .wallpaper_id(4)
+                .build();
+
+            let download_wallpaper_mock = server
+                .mock(
+                    "GET",
+                    Matcher::Regex(r"^/v2/core/download/wallpaper.*$".to_string()),
+                )
+                .match_query(Matcher::Regex("show_watermark=true".to_string()))
+                .with_status(200)
+                .with_header("content-type", "application/json")
+                .with_body(
+                    fs::read_to_string(
+                        "resources/download_wallpaper_success_fully_populated.json",
+                    )?
+                    .replace("{{host}}", &server.url()),
+                )
+                .create_async()
+                .await;
+
+            let download_file_mock = server
+                .mock("GET", Matcher::Regex(r"^/test.jpg$".to_string()))
+                .with_status(401)
+                .with_header("content-type", "image/jpg")
+                .with_body(fs::read_to_string("resources/unauthorised_response.json")?)
+                .create_async()
+                .await;
+
+            let client = DigitalBlasphemyClient::new_test("api_key".to_string(), server.url())?;
+
+            let filename = format!("./{}.jpg", Uuid::new_v4().to_string());
+
+            let error = client
+                .download_wallpaper(&filename, &download_wallpaper_request)
+                .await
+                .unwrap_err();
+
+            assert_eq!(error.code, 401);
+            assert_eq!(error.description, "Unauthorized".to_string());
+
+            assert!(!fs::exists(&filename)?);
+
+            download_wallpaper_mock.assert_async().await;
+            download_file_mock.assert_async().await;
+
+            Ok(())
+        }
+
+        #[tokio::test]
+        async fn download_wallpaper_can_map_bad_request_response_when_getting_download_wallpaper_response()
+        -> Result<(), Box<dyn Error>> {
+            let mut server = mockito::Server::new_async().await;
+
+            let download_wallpaper_request = DownloadWallpaperRequest::builder()
+                .width(2)
+                .height(3)
+                .wallpaper_id(4)
+                .build();
+
+            let download_wallpaper_mock = server
+                .mock(
+                    "GET",
+                    Matcher::Regex(r"^/v2/core/download/wallpaper.*$".to_string()),
+                )
+                .with_status(400)
+                .with_header("content-type", "application/json")
+                .with_body(fs::read_to_string(
+                    "resources/download_wallpaper_bad_request.json",
+                )?)
+                .create_async()
+                .await;
+
+            let client = DigitalBlasphemyClient::new_test("api_key".to_string(), server.url())?;
+
+            let filename = format!("./{}.jpg", Uuid::new_v4().to_string());
+
+            let error = client
+                .download_wallpaper(&filename, &download_wallpaper_request)
+                .await
+                .unwrap_err();
+
+            assert_eq!(error.code, 400);
+            assert_eq!(error.description, "Bad Request".to_string());
+            assert_eq!(
+                error.errors.unwrap(),
+                vec![
+                    "\"type\" must be one of [single, dual, triple, mobile]",
+                    "\"width\" must be a number"
+                ]
+            );
+
+            assert!(!fs::exists(&filename)?);
+
+            download_wallpaper_mock.assert_async().await;
+
+            Ok(())
+        }
+
+        #[tokio::test]
+        async fn download_wallpaper_can_map_not_found_response_when_downloading_file()
+        -> Result<(), Box<dyn Error>> {
+            let mut server = mockito::Server::new_async().await;
+
+            let download_wallpaper_request = DownloadWallpaperRequest::builder()
+                .width(2)
+                .height(3)
+                .wallpaper_id(4)
+                .build();
+
+            let download_wallpaper_mock = server
+                .mock(
+                    "GET",
+                    Matcher::Regex(r"^/v2/core/download/wallpaper.*$".to_string()),
+                )
+                .match_query(Matcher::Regex("show_watermark=true".to_string()))
+                .with_status(200)
+                .with_header("content-type", "application/json")
+                .with_body(
+                    fs::read_to_string(
+                        "resources/download_wallpaper_success_fully_populated.json",
+                    )?
+                    .replace("{{host}}", &server.url()),
+                )
+                .create_async()
+                .await;
+
+            let download_file_mock = server
+                .mock("GET", Matcher::Regex(r"^/test.jpg$".to_string()))
+                .with_status(404)
+                .with_header("content-type", "text/plain")
+                .with_body("Object Not Found")
+                .create_async()
+                .await;
+
+            let client = DigitalBlasphemyClient::new_test("api_key".to_string(), server.url())?;
+
+            let filename = format!("./{}.jpg", Uuid::new_v4().to_string());
+
+            let error = client
+                .download_wallpaper(&filename, &download_wallpaper_request)
+                .await
+                .unwrap_err();
+
+            assert_eq!(error.code, 404);
+            assert_eq!(error.description, "Not Found".to_string());
+            assert_eq!(error.errors.unwrap(), vec!["Object Not Found"]);
+
+            assert!(!fs::exists(&filename)?);
+
+            download_wallpaper_mock.assert_async().await;
+            download_file_mock.assert_async().await;
+
+            Ok(())
+        }
+
+        #[tokio::test]
+        #[should_panic(expected = "Unable to parse the body as JSON Error Response")]
+        async fn download_wallpaper_can_map_unknown_error_response_when_downloading_file() {
+            let mut server = mockito::Server::new_async().await;
+
+            let download_wallpaper_request = DownloadWallpaperRequest::builder()
+                .width(2)
+                .height(3)
+                .wallpaper_id(4)
+                .build();
+
+            server
+                .mock(
+                    "GET",
+                    Matcher::Regex(r"^/v2/core/download/wallpaper.*$".to_string()),
+                )
+                .match_query(Matcher::Regex("show_watermark=true".to_string()))
+                .with_status(200)
+                .with_header("content-type", "application/json")
+                .with_body(
+                    fs::read_to_string("resources/download_wallpaper_success_fully_populated.json")
+                        .unwrap()
+                        .replace("{{host}}", &server.url()),
+                )
+                .create_async()
+                .await;
+
+            server
+                .mock("GET", Matcher::Regex(r"^/test.jpg$".to_string()))
+                .with_status(405)
+                .create_async()
+                .await;
+
+            let client =
+                DigitalBlasphemyClient::new_test("api_key".to_string(), server.url()).unwrap();
+
+            let filename = format!("./{}.jpg", Uuid::new_v4().to_string());
+
+            let _ = client
+                .download_wallpaper(&filename, &download_wallpaper_request)
+                .await;
         }
     }
 }

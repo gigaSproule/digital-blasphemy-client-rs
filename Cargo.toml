@@ -18,3 +18,4 @@ log = "0.4.27"
 [dev-dependencies]
 mockito = "1.7.0"
 tokio = { version = "1.46.1", features = ["rt", "macros"] }
+uuid = { version = "1.17.0", features = ["v4"] }

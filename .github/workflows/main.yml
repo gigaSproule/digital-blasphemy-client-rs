@@ -64,7 +64,7 @@ jobs:
         run: cargo install cargo-tarpaulin
       - name: Run tests with coverage
         if: github.ref_type != 'tags'
-        run: cargo tarpaulin --fail-under 60
+        run: cargo tarpaulin --fail-under 92
   release-dry-run:
     runs-on: "ubuntu-latest"
     timeout-minutes: 30

@@ -1,0 +1,8 @@
+{
+  "code": 400,
+  "description": "Bad Request",
+  "errors": [
+    "\"filter_res_height\" must be greater than or equal to 1",
+    "\"filter_res_width\" must be greater than or equal to 1"
+  ]
+}
