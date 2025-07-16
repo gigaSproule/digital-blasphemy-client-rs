@@ -7,7 +7,7 @@ pub use crate::model::{
     GetWallpaperResponse, GetWallpapersOrderBy, GetWallpapersRequest, GetWallpapersResponse,
     Wallpaper,
 };
-use log::{Level, debug, log_enabled};
+use log::{debug, log_enabled, Level};
 use reqwest::{RequestBuilder, Response, StatusCode};
 use std::error::Error;
 use std::fs::OpenOptions;
@@ -303,568 +303,2498 @@ mod tests {
     use std::collections::HashMap;
     use std::fs;
 
-    #[tokio::test]
-    async fn get_user_information_can_map_successful_response() -> Result<(), Box<dyn Error>> {
-        let mut server = mockito::Server::new_async().await;
+    mod get_user_information {
+        use super::*;
 
-        let mock = server
-            .mock("GET", "/v2/core/account")
-            .with_status(200)
-            .with_header("content-type", "application/json")
-            .with_body(fs::read_to_string(
-                "resources/get_user_information_success.json",
-            )?)
-            .create_async()
-            .await;
+        #[tokio::test]
+        async fn get_user_information_can_map_successful_response() -> Result<(), Box<dyn Error>> {
+            let mut server = mockito::Server::new_async().await;
 
-        let client =
-            DigitalBlasphemyClient::new_test("api_key".to_string(), server.url().to_string())?;
+            let mock = server
+                .mock("GET", "/v2/core/account")
+                .with_status(200)
+                .with_header("content-type", "application/json")
+                .with_body(fs::read_to_string(
+                    "resources/get_user_information_success.json",
+                )?)
+                .create_async()
+                .await;
 
-        let user_information = client.get_user_information().await.unwrap();
+            let client =
+                DigitalBlasphemyClient::new_test("api_key".to_string(), server.url().to_string())?;
 
-        assert_eq!(user_information.db_core.timestamp, 1);
-        assert!(user_information.user.active);
-        assert_eq!(user_information.user.display_name, "username".to_string());
-        assert_eq!(user_information.user.id, 2);
-        assert!(user_information.user.lifetime);
-        assert!(user_information.user.plus);
+            let user_information = client.get_user_information().await.unwrap();
 
-        mock.assert_async().await;
+            assert_eq!(user_information.db_core.timestamp, 1);
+            assert!(user_information.user.active);
+            assert_eq!(user_information.user.display_name, "username".to_string());
+            assert_eq!(user_information.user.id, 2);
+            assert!(user_information.user.lifetime);
+            assert!(user_information.user.plus);
 
-        Ok(())
+            mock.assert_async().await;
+
+            Ok(())
+        }
+
+        #[tokio::test]
+        async fn get_user_information_can_map_error_response() -> Result<(), Box<dyn Error>> {
+            let mut server = mockito::Server::new_async().await;
+
+            let mock = server
+                .mock("GET", "/v2/core/account")
+                .with_status(401)
+                .with_header("content-type", "application/json")
+                .with_body(fs::read_to_string("resources/unauthorised_response.json")?)
+                .create_async()
+                .await;
+
+            let client =
+                DigitalBlasphemyClient::new_test("api_key".to_string(), server.url().to_string())?;
+
+            let error = client.get_user_information().await.unwrap_err();
+
+            assert_eq!(error.code, 401);
+            assert_eq!(error.description, "Unauthorized".to_string());
+
+            mock.assert_async().await;
+
+            Ok(())
+        }
     }
 
-    #[tokio::test]
-    async fn get_user_information_can_map_error_response() -> Result<(), Box<dyn Error>> {
-        let mut server = mockito::Server::new_async().await;
+    mod get_wallpapers {
+        use super::*;
 
-        let mock = server
-            .mock("GET", "/v2/core/account")
-            .with_status(401)
-            .with_header("content-type", "application/json")
-            .with_body(fs::read_to_string("resources/unauthorised_response.json")?)
-            .create_async()
-            .await;
+        #[tokio::test]
+        async fn get_wallpapers_does_not_send_filter_date_day_if_not_provided()
+        -> Result<(), Box<dyn Error>> {
+            let mut server = mockito::Server::new_async().await;
 
-        let client =
-            DigitalBlasphemyClient::new_test("api_key".to_string(), server.url().to_string())?;
+            let get_wallpapers_request = GetWallpapersRequest::builder().build();
 
-        let error = client.get_user_information().await.unwrap_err();
+            let mock = server
+                .mock(
+                    "GET",
+                    Matcher::Regex(r"^/v2/core/wallpapers.*$".to_string()),
+                )
+                .match_query(Matcher::Regex("[^filter_date_day]".to_string()))
+                .with_status(200)
+                .with_header("content-type", "application/json")
+                .with_body(fs::read_to_string(
+                    "resources/get_wallpapers_success_fully_populated.json",
+                )?)
+                .create_async()
+                .await;
 
-        assert_eq!(error.code, 401);
-        assert_eq!(error.description, "Unauthorized".to_string());
+            let client =
+                DigitalBlasphemyClient::new_test("api_key".to_string(), server.url().to_string())?;
 
-        mock.assert_async().await;
+            client.get_wallpapers(get_wallpapers_request).await.unwrap();
 
-        Ok(())
-    }
+            mock.assert_async().await;
 
-    #[tokio::test]
-    async fn get_wallpapers_does_not_send_filter_date_day_if_not_provided()
-    -> Result<(), Box<dyn Error>> {
-        let mut server = mockito::Server::new_async().await;
+            Ok(())
+        }
 
-        let get_wallpapers_request = GetWallpapersRequest::builder().build();
+        #[tokio::test]
+        async fn get_wallpapers_does_send_filter_date_day_if_provided() -> Result<(), Box<dyn Error>>
+        {
+            let mut server = mockito::Server::new_async().await;
 
-        let mock = server
-            .mock(
-                "GET",
-                mockito::Matcher::Regex(r"^/v2/core/wallpapers.*$".to_string()),
-            )
-            .match_query(Matcher::Regex("[^filter_date_day]".to_string()))
-            .with_status(200)
-            .with_header("content-type", "application/json")
-            .with_body(fs::read_to_string(
-                "resources/get_wallpapers_success_fully_populated.json",
-            )?)
-            .create_async()
-            .await;
+            let get_wallpapers_request = GetWallpapersRequest::builder().filter_date_day(1).build();
 
-        let client =
-            DigitalBlasphemyClient::new_test("api_key".to_string(), server.url().to_string())?;
+            let mock = server
+                .mock(
+                    "GET",
+                    Matcher::Regex(r"^/v2/core/wallpapers.*$".to_string()),
+                )
+                .match_query(Matcher::Regex("filter_date_day=1".to_string()))
+                .with_status(200)
+                .with_header("content-type", "application/json")
+                .with_body(fs::read_to_string(
+                    "resources/get_wallpapers_success_fully_populated.json",
+                )?)
+                .create_async()
+                .await;
 
-        client.get_wallpapers(get_wallpapers_request).await.unwrap();
+            let client =
+                DigitalBlasphemyClient::new_test("api_key".to_string(), server.url().to_string())?;
 
-        mock.assert_async().await;
+            client.get_wallpapers(get_wallpapers_request).await.unwrap();
 
-        Ok(())
-    }
+            mock.assert_async().await;
 
-    #[tokio::test]
-    async fn get_wallpapers_does_send_filter_date_day_if_provided() -> Result<(), Box<dyn Error>> {
-        let mut server = mockito::Server::new_async().await;
+            Ok(())
+        }
 
-        let get_wallpapers_request = GetWallpapersRequest::builder().filter_date_day(1).build();
+        #[tokio::test]
+        async fn get_wallpapers_does_not_send_filter_date_month_if_not_provided()
+        -> Result<(), Box<dyn Error>> {
+            let mut server = mockito::Server::new_async().await;
 
-        let mock = server
-            .mock(
-                "GET",
-                mockito::Matcher::Regex(r"^/v2/core/wallpapers.*$".to_string()),
-            )
-            .match_query(Matcher::Regex("filter_date_day=1".to_string()))
-            .with_status(200)
-            .with_header("content-type", "application/json")
-            .with_body(fs::read_to_string(
-                "resources/get_wallpapers_success_fully_populated.json",
-            )?)
-            .create_async()
-            .await;
+            let get_wallpapers_request = GetWallpapersRequest::builder().build();
 
-        let client =
-            DigitalBlasphemyClient::new_test("api_key".to_string(), server.url().to_string())?;
+            let mock = server
+                .mock(
+                    "GET",
+                    Matcher::Regex(r"^/v2/core/wallpapers.*$".to_string()),
+                )
+                .match_query(Matcher::Regex("[^filter_date_month]".to_string()))
+                .with_status(200)
+                .with_header("content-type", "application/json")
+                .with_body(fs::read_to_string(
+                    "resources/get_wallpapers_success_fully_populated.json",
+                )?)
+                .create_async()
+                .await;
 
-        client.get_wallpapers(get_wallpapers_request).await.unwrap();
+            let client =
+                DigitalBlasphemyClient::new_test("api_key".to_string(), server.url().to_string())?;
 
-        mock.assert_async().await;
+            client.get_wallpapers(get_wallpapers_request).await.unwrap();
 
-        Ok(())
-    }
+            mock.assert_async().await;
 
-    // TODO: Add tests for other request builder properties
+            Ok(())
+        }
 
-    #[tokio::test]
-    async fn get_wallpapers_can_map_successful_response_fully_populated()
-    -> Result<(), Box<dyn Error>> {
-        let mut server = mockito::Server::new_async().await;
+        #[tokio::test]
+        async fn get_wallpapers_does_send_filter_date_month_if_provided()
+        -> Result<(), Box<dyn Error>> {
+            let mut server = mockito::Server::new_async().await;
 
-        let get_wallpapers_request = GetWallpapersRequest::builder().build();
+            let get_wallpapers_request =
+                GetWallpapersRequest::builder().filter_date_month(1).build();
 
-        let mock = server
-            .mock(
-                "GET",
-                mockito::Matcher::Regex(r"^/v2/core/wallpapers.*$".to_string()),
-            )
-            .with_status(200)
-            .with_header("content-type", "application/json")
-            .with_body(fs::read_to_string(
-                "resources/get_wallpapers_success_fully_populated.json",
-            )?)
-            .create_async()
-            .await;
+            let mock = server
+                .mock(
+                    "GET",
+                    Matcher::Regex(r"^/v2/core/wallpapers.*$".to_string()),
+                )
+                .match_query(Matcher::Regex("filter_date_month=1".to_string()))
+                .with_status(200)
+                .with_header("content-type", "application/json")
+                .with_body(fs::read_to_string(
+                    "resources/get_wallpapers_success_fully_populated.json",
+                )?)
+                .create_async()
+                .await;
 
-        let client =
-            DigitalBlasphemyClient::new_test("api_key".to_string(), server.url().to_string())?;
+            let client =
+                DigitalBlasphemyClient::new_test("api_key".to_string(), server.url().to_string())?;
 
-        let get_wallpapers_response = client.get_wallpapers(get_wallpapers_request).await.unwrap();
+            client.get_wallpapers(get_wallpapers_request).await.unwrap();
 
-        let expected_wallpaper_13 = Wallpaper {
-            id: 13,
-            all_free: Some(true),
-            comments: Some(Comments {
-                comments: vec![
-                    Comment {
-                        id: "14".to_string(),
-                        author_id: "author ID 1".to_string(),
-                        author_display: "author display 1".to_string(),
-                        content: "Content 1".to_string(),
-                        rating: "15".to_string(),
-                        timestamp: 16,
-                    },
-                    Comment {
-                        id: "17".to_string(),
-                        author_id: "author ID 2".to_string(),
-                        author_display: "author display 2".to_string(),
-                        content: "Content 2".to_string(),
-                        rating: "18".to_string(),
-                        timestamp: 19,
-                    },
-                ],
-            }),
-            content: Some("Content 3".to_string()),
-            free: Some(true),
-            name: "Vulcan".to_string(),
-            paths: Paths {
-                api: "/wallpaper/13".to_string(),
-                thumb: "/thumbnail/21x22/vulcan_thumbnail_21x22.jpg".to_string(),
-                web: "/sec/vulcan/".to_string(),
-            },
-            pickle_jar: Some(PickleJar {
-                parent: "parent 1".to_string(),
-                siblings: vec!["sibling 1".to_string(), "sibling 2".to_string()],
-            }),
-            rating: Some("20".to_string()),
-            resolutions: Some(Resolutions {
-                single: vec![
-                    Resolution {
-                        label: "21x22".to_string(),
-                        width: "21".to_string(),
-                        height: "22".to_string(),
-                        image: "/single/21x22/vulcan_single_21x22.jpg".to_string(),
-                    },
-                    Resolution {
-                        label: "23x24".to_string(),
-                        width: "23".to_string(),
-                        height: "24".to_string(),
-                        image: "/single/23x24/vulcan_single_23x24.jpg".to_string(),
-                    },
-                ],
-                dual: Some(vec![
-                    Resolution {
-                        label: "25x26".to_string(),
-                        width: "25".to_string(),
-                        height: "26".to_string(),
-                        image: "/dual/25x26/vulcan_dual_25x26.jpg".to_string(),
-                    },
-                    Resolution {
-                        label: "27x28".to_string(),
-                        width: "27".to_string(),
-                        height: "28".to_string(),
-                        image: "/dual/27x28/vulcan_dual_27x28.jpg".to_string(),
-                    },
-                ]),
-                triple: Some(vec![
-                    Resolution {
-                        label: "29x30".to_string(),
-                        width: "29".to_string(),
-                        height: "30".to_string(),
-                        image: "/triple/29x30/vulcan_triple_29x30.jpg".to_string(),
-                    },
-                    Resolution {
-                        label: "31x32".to_string(),
-                        width: "31".to_string(),
-                        height: "32".to_string(),
-                        image: "/triple/31x32/vulcan_triple_31x32.jpg".to_string(),
-                    },
-                ]),
-                mobile: Some(vec![
-                    Resolution {
-                        label: "33x34".to_string(),
-                        width: "33".to_string(),
-                        height: "34".to_string(),
-                        image: "/mobile/33x34/vulcan_mobile_33x34.jpg".to_string(),
-                    },
-                    Resolution {
-                        label: "33x34".to_string(),
-                        width: "33".to_string(),
-                        height: "34".to_string(),
-                        image: "/mobile/33x34/vulcan_mobile_33x34.jpg".to_string(),
-                    },
-                ]),
-            }),
-            sku: Some("vulcan".to_string()),
-            tags: Some(HashMap::from([
-                (
-                    "35".to_string(),
-                    Tag {
-                        id: 35,
-                        name: "Tag 1".to_string(),
-                    },
-                ),
-                (
-                    "36".to_string(),
-                    Tag {
-                        id: 36,
-                        name: "Tag 2".to_string(),
-                    },
-                ),
-            ])),
-            timestamp: Some(37),
-        };
-        let expected_wallpaper_38 = Wallpaper {
-            id: 38,
-            all_free: Some(false),
-            comments: Some(Comments {
-                comments: vec![
-                    Comment {
-                        id: "39".to_string(),
-                        author_id: "author ID 3".to_string(),
-                        author_display: "author display 3".to_string(),
-                        content: "Content 4".to_string(),
-                        rating: "40".to_string(),
-                        timestamp: 41,
-                    },
-                    Comment {
-                        id: "42".to_string(),
-                        author_id: "author ID 4".to_string(),
-                        author_display: "author display 4".to_string(),
-                        content: "Content 5".to_string(),
-                        rating: "43".to_string(),
-                        timestamp: 44,
-                    },
-                ],
-            }),
-            content: Some("Content 6".to_string()),
-            free: Some(false),
-            name: "Valley I".to_string(),
-            paths: Paths {
-                api: "/wallpaper/38".to_string(),
-                thumb: "/thumbnail/46x47/valley_thumbnail_46x47.jpg".to_string(),
-                web: "/sec/valley/".to_string(),
-            },
-            pickle_jar: Some(PickleJar {
-                parent: "parent 2".to_string(),
-                siblings: vec!["sibling 3".to_string(), "sibling 4".to_string()],
-            }),
-            rating: Some("45".to_string()),
-            resolutions: Some(Resolutions {
-                single: vec![
-                    Resolution {
-                        label: "46x47".to_string(),
-                        width: "46".to_string(),
-                        height: "47".to_string(),
-                        image: "/single/46x47/valley_single_46x47.jpg".to_string(),
-                    },
-                    Resolution {
-                        label: "48x49".to_string(),
-                        width: "48".to_string(),
-                        height: "49".to_string(),
-                        image: "/single/48x49/valley_single_48x49.jpg".to_string(),
-                    },
-                ],
-                dual: Some(vec![
-                    Resolution {
-                        label: "50x51".to_string(),
-                        width: "50".to_string(),
-                        height: "51".to_string(),
-                        image: "/dual/50x51/valley_dual_50x51.jpg".to_string(),
-                    },
-                    Resolution {
-                        label: "52x53".to_string(),
-                        width: "52".to_string(),
-                        height: "53".to_string(),
-                        image: "/dual/52x53/valley_dual_52x53.jpg".to_string(),
-                    },
-                ]),
-                triple: Some(vec![
-                    Resolution {
-                        label: "54x55".to_string(),
-                        width: "54".to_string(),
-                        height: "55".to_string(),
-                        image: "/triple/54x55/valley_triple_54x55.jpg".to_string(),
-                    },
-                    Resolution {
-                        label: "56x57".to_string(),
-                        width: "56".to_string(),
-                        height: "57".to_string(),
-                        image: "/triple/56x57/valley_triple_56x57.jpg".to_string(),
-                    },
-                ]),
-                mobile: Some(vec![
-                    Resolution {
-                        label: "58x59".to_string(),
-                        width: "58".to_string(),
-                        height: "59".to_string(),
-                        image: "/mobile/58x59/valley_mobile_58x59.jpg".to_string(),
-                    },
-                    Resolution {
-                        label: "60x61".to_string(),
-                        width: "60".to_string(),
-                        height: "61".to_string(),
-                        image: "/mobile/60x61/valley_mobile_60x61.jpg".to_string(),
-                    },
-                ]),
-            }),
-            sku: Some("valley".to_string()),
-            tags: Some(HashMap::from([
-                (
-                    "63".to_string(),
-                    Tag {
-                        id: 63,
-                        name: "Tag 4".to_string(),
-                    },
-                ),
-                (
-                    "62".to_string(),
-                    Tag {
-                        id: 62,
-                        name: "Tag 3".to_string(),
-                    },
-                ),
-            ])),
-            timestamp: Some(64),
-        };
-        let expected_get_wallpapers_response = GetWallpapersResponse {
-            db_core: GetWallpapersDBCore {
-                timestamp: 1,
-                endpoints: Endpoints {
-                    api: "https://api.digitalblasphemy.com/v2/core".to_string(),
-                    image: "https://arcadia.digitalblasphemy.com".to_string(),
-                    thumb: "https://cdn.digitalblasphemy.com".to_string(),
-                    web: "https://digitalblasphemy.com".to_string(),
+            mock.assert_async().await;
+
+            Ok(())
+        }
+
+        #[tokio::test]
+        async fn get_wallpapers_does_not_send_filter_date_year_if_not_provided()
+        -> Result<(), Box<dyn Error>> {
+            let mut server = mockito::Server::new_async().await;
+
+            let get_wallpapers_request = GetWallpapersRequest::builder().build();
+
+            let mock = server
+                .mock(
+                    "GET",
+                    Matcher::Regex(r"^/v2/core/wallpapers.*$".to_string()),
+                )
+                .match_query(Matcher::Regex("[^filter_date_year]".to_string()))
+                .with_status(200)
+                .with_header("content-type", "application/json")
+                .with_body(fs::read_to_string(
+                    "resources/get_wallpapers_success_fully_populated.json",
+                )?)
+                .create_async()
+                .await;
+
+            let client =
+                DigitalBlasphemyClient::new_test("api_key".to_string(), server.url().to_string())?;
+
+            client.get_wallpapers(get_wallpapers_request).await.unwrap();
+
+            mock.assert_async().await;
+
+            Ok(())
+        }
+
+        #[tokio::test]
+        async fn get_wallpapers_does_send_filter_date_year_if_provided()
+        -> Result<(), Box<dyn Error>> {
+            let mut server = mockito::Server::new_async().await;
+
+            let get_wallpapers_request = GetWallpapersRequest::builder()
+                .filter_date_year(1997)
+                .build();
+
+            let mock = server
+                .mock(
+                    "GET",
+                    Matcher::Regex(r"^/v2/core/wallpapers.*$".to_string()),
+                )
+                .match_query(Matcher::Regex("filter_date_year=1997".to_string()))
+                .with_status(200)
+                .with_header("content-type", "application/json")
+                .with_body(fs::read_to_string(
+                    "resources/get_wallpapers_success_fully_populated.json",
+                )?)
+                .create_async()
+                .await;
+
+            let client =
+                DigitalBlasphemyClient::new_test("api_key".to_string(), server.url().to_string())?;
+
+            client.get_wallpapers(get_wallpapers_request).await.unwrap();
+
+            mock.assert_async().await;
+
+            Ok(())
+        }
+
+        #[tokio::test]
+        async fn get_wallpapers_does_send_filter_date_operator_if_not_provided()
+        -> Result<(), Box<dyn Error>> {
+            let mut server = mockito::Server::new_async().await;
+
+            let get_wallpapers_request = GetWallpapersRequest::builder().build();
+
+            let mock = server
+                .mock(
+                    "GET",
+                    Matcher::Regex(r"^/v2/core/wallpapers.*$".to_string()),
+                )
+                .match_query(Matcher::Regex("filter_date_operator=%3E%3D".to_string()))
+                .with_status(200)
+                .with_header("content-type", "application/json")
+                .with_body(fs::read_to_string(
+                    "resources/get_wallpapers_success_fully_populated.json",
+                )?)
+                .create_async()
+                .await;
+
+            let client =
+                DigitalBlasphemyClient::new_test("api_key".to_string(), server.url().to_string())?;
+
+            client.get_wallpapers(get_wallpapers_request).await.unwrap();
+
+            mock.assert_async().await;
+
+            Ok(())
+        }
+
+        #[tokio::test]
+        async fn get_wallpapers_does_send_filter_date_operator_if_provided()
+        -> Result<(), Box<dyn Error>> {
+            let mut server = mockito::Server::new_async().await;
+
+            let get_wallpapers_request = GetWallpapersRequest::builder()
+                .filter_date_operator(Operator::Equal)
+                .build();
+
+            let mock = server
+                .mock(
+                    "GET",
+                    Matcher::Regex(r"^/v2/core/wallpapers.*$".to_string()),
+                )
+                .match_query(Matcher::Regex("filter_date_operator=%3D".to_string()))
+                .with_status(200)
+                .with_header("content-type", "application/json")
+                .with_body(fs::read_to_string(
+                    "resources/get_wallpapers_success_fully_populated.json",
+                )?)
+                .create_async()
+                .await;
+
+            let client =
+                DigitalBlasphemyClient::new_test("api_key".to_string(), server.url().to_string())?;
+
+            client.get_wallpapers(get_wallpapers_request).await.unwrap();
+
+            mock.assert_async().await;
+
+            Ok(())
+        }
+
+        #[tokio::test]
+        async fn get_wallpapers_does_not_send_filter_gallery_if_not_provided()
+        -> Result<(), Box<dyn Error>> {
+            let mut server = mockito::Server::new_async().await;
+
+            let get_wallpapers_request = GetWallpapersRequest::builder().build();
+
+            let mock = server
+                .mock(
+                    "GET",
+                    Matcher::Regex(r"^/v2/core/wallpapers.*$".to_string()),
+                )
+                .match_query(Matcher::Regex("[^filter_gallery]".to_string()))
+                .with_status(200)
+                .with_header("content-type", "application/json")
+                .with_body(fs::read_to_string(
+                    "resources/get_wallpapers_success_fully_populated.json",
+                )?)
+                .create_async()
+                .await;
+
+            let client =
+                DigitalBlasphemyClient::new_test("api_key".to_string(), server.url().to_string())?;
+
+            client.get_wallpapers(get_wallpapers_request).await.unwrap();
+
+            mock.assert_async().await;
+
+            Ok(())
+        }
+
+        #[tokio::test]
+        async fn get_wallpapers_does_send_filter_gallery_if_provided() -> Result<(), Box<dyn Error>>
+        {
+            let mut server = mockito::Server::new_async().await;
+
+            let get_wallpapers_request = GetWallpapersRequest::builder()
+                .filter_gallery(vec![1, 2])
+                .build();
+
+            let mock = server
+                .mock(
+                    "GET",
+                    Matcher::Regex(r"^/v2/core/wallpapers.*$".to_string()),
+                )
+                .match_query(Matcher::Regex(
+                    "filter_gallery=1&filter_gallery=2".to_string(),
+                ))
+                .with_status(200)
+                .with_header("content-type", "application/json")
+                .with_body(fs::read_to_string(
+                    "resources/get_wallpapers_success_fully_populated.json",
+                )?)
+                .create_async()
+                .await;
+
+            let client =
+                DigitalBlasphemyClient::new_test("api_key".to_string(), server.url().to_string())?;
+
+            client.get_wallpapers(get_wallpapers_request).await.unwrap();
+
+            mock.assert_async().await;
+
+            Ok(())
+        }
+
+        #[tokio::test]
+        async fn get_wallpapers_does_not_send_filter_rating_if_not_provided()
+        -> Result<(), Box<dyn Error>> {
+            let mut server = mockito::Server::new_async().await;
+
+            let get_wallpapers_request = GetWallpapersRequest::builder().build();
+
+            let mock = server
+                .mock(
+                    "GET",
+                    Matcher::Regex(r"^/v2/core/wallpapers.*$".to_string()),
+                )
+                .match_query(Matcher::Regex("[^filter_rating]".to_string()))
+                .with_status(200)
+                .with_header("content-type", "application/json")
+                .with_body(fs::read_to_string(
+                    "resources/get_wallpapers_success_fully_populated.json",
+                )?)
+                .create_async()
+                .await;
+
+            let client =
+                DigitalBlasphemyClient::new_test("api_key".to_string(), server.url().to_string())?;
+
+            client.get_wallpapers(get_wallpapers_request).await.unwrap();
+
+            mock.assert_async().await;
+
+            Ok(())
+        }
+
+        #[tokio::test]
+        async fn get_wallpapers_does_send_filter_rating_if_provided() -> Result<(), Box<dyn Error>>
+        {
+            let mut server = mockito::Server::new_async().await;
+
+            let get_wallpapers_request = GetWallpapersRequest::builder().filter_rating(1.2).build();
+
+            let mock = server
+                .mock(
+                    "GET",
+                    Matcher::Regex(r"^/v2/core/wallpapers.*$".to_string()),
+                )
+                .match_query(Matcher::Regex("filter_rating=1.2".to_string()))
+                .with_status(200)
+                .with_header("content-type", "application/json")
+                .with_body(fs::read_to_string(
+                    "resources/get_wallpapers_success_fully_populated.json",
+                )?)
+                .create_async()
+                .await;
+
+            let client =
+                DigitalBlasphemyClient::new_test("api_key".to_string(), server.url().to_string())?;
+
+            client.get_wallpapers(get_wallpapers_request).await.unwrap();
+
+            mock.assert_async().await;
+
+            Ok(())
+        }
+
+        #[tokio::test]
+        async fn get_wallpapers_does_send_filter_rating_operator_if_not_provided()
+        -> Result<(), Box<dyn Error>> {
+            let mut server = mockito::Server::new_async().await;
+
+            let get_wallpapers_request = GetWallpapersRequest::builder().build();
+
+            let mock = server
+                .mock(
+                    "GET",
+                    Matcher::Regex(r"^/v2/core/wallpapers.*$".to_string()),
+                )
+                .match_query(Matcher::Regex("filter_rating_operator=%3E%3D".to_string()))
+                .with_status(200)
+                .with_header("content-type", "application/json")
+                .with_body(fs::read_to_string(
+                    "resources/get_wallpapers_success_fully_populated.json",
+                )?)
+                .create_async()
+                .await;
+
+            let client =
+                DigitalBlasphemyClient::new_test("api_key".to_string(), server.url().to_string())?;
+
+            client.get_wallpapers(get_wallpapers_request).await.unwrap();
+
+            mock.assert_async().await;
+
+            Ok(())
+        }
+
+        #[tokio::test]
+        async fn get_wallpapers_does_send_filter_rating_operator_if_provided()
+        -> Result<(), Box<dyn Error>> {
+            let mut server = mockito::Server::new_async().await;
+
+            let get_wallpapers_request = GetWallpapersRequest::builder()
+                .filter_rating_operator(Operator::Equal)
+                .build();
+
+            let mock = server
+                .mock(
+                    "GET",
+                    Matcher::Regex(r"^/v2/core/wallpapers.*$".to_string()),
+                )
+                .match_query(Matcher::Regex("filter_rating_operator=%3D".to_string()))
+                .with_status(200)
+                .with_header("content-type", "application/json")
+                .with_body(fs::read_to_string(
+                    "resources/get_wallpapers_success_fully_populated.json",
+                )?)
+                .create_async()
+                .await;
+
+            let client =
+                DigitalBlasphemyClient::new_test("api_key".to_string(), server.url().to_string())?;
+
+            client.get_wallpapers(get_wallpapers_request).await.unwrap();
+
+            mock.assert_async().await;
+
+            Ok(())
+        }
+
+        #[tokio::test]
+        async fn get_wallpapers_does_not_send_filter_res_height_if_not_provided()
+        -> Result<(), Box<dyn Error>> {
+            let mut server = mockito::Server::new_async().await;
+
+            let get_wallpapers_request = GetWallpapersRequest::builder().build();
+
+            let mock = server
+                .mock(
+                    "GET",
+                    Matcher::Regex(r"^/v2/core/wallpapers.*$".to_string()),
+                )
+                .match_query(Matcher::Regex("[^filter_res_height]".to_string()))
+                .with_status(200)
+                .with_header("content-type", "application/json")
+                .with_body(fs::read_to_string(
+                    "resources/get_wallpapers_success_fully_populated.json",
+                )?)
+                .create_async()
+                .await;
+
+            let client =
+                DigitalBlasphemyClient::new_test("api_key".to_string(), server.url().to_string())?;
+
+            client.get_wallpapers(get_wallpapers_request).await.unwrap();
+
+            mock.assert_async().await;
+
+            Ok(())
+        }
+
+        #[tokio::test]
+        async fn get_wallpapers_does_send_filter_res_height_if_provided()
+        -> Result<(), Box<dyn Error>> {
+            let mut server = mockito::Server::new_async().await;
+
+            let get_wallpapers_request =
+                GetWallpapersRequest::builder().filter_res_height(1).build();
+
+            let mock = server
+                .mock(
+                    "GET",
+                    Matcher::Regex(r"^/v2/core/wallpapers.*$".to_string()),
+                )
+                .match_query(Matcher::Regex("filter_res_height=1".to_string()))
+                .with_status(200)
+                .with_header("content-type", "application/json")
+                .with_body(fs::read_to_string(
+                    "resources/get_wallpapers_success_fully_populated.json",
+                )?)
+                .create_async()
+                .await;
+
+            let client =
+                DigitalBlasphemyClient::new_test("api_key".to_string(), server.url().to_string())?;
+
+            client.get_wallpapers(get_wallpapers_request).await.unwrap();
+
+            mock.assert_async().await;
+
+            Ok(())
+        }
+
+        #[tokio::test]
+        async fn get_wallpapers_does_send_filter_res_operator_if_not_provided()
+        -> Result<(), Box<dyn Error>> {
+            let mut server = mockito::Server::new_async().await;
+
+            let get_wallpapers_request = GetWallpapersRequest::builder().build();
+
+            let mock = server
+                .mock(
+                    "GET",
+                    Matcher::Regex(r"^/v2/core/wallpapers.*$".to_string()),
+                )
+                .match_query(Matcher::Regex("filter_res_operator=%3E%3D".to_string()))
+                .with_status(200)
+                .with_header("content-type", "application/json")
+                .with_body(fs::read_to_string(
+                    "resources/get_wallpapers_success_fully_populated.json",
+                )?)
+                .create_async()
+                .await;
+
+            let client =
+                DigitalBlasphemyClient::new_test("api_key".to_string(), server.url().to_string())?;
+
+            client.get_wallpapers(get_wallpapers_request).await.unwrap();
+
+            mock.assert_async().await;
+
+            Ok(())
+        }
+
+        #[tokio::test]
+        async fn get_wallpapers_does_send_filter_res_operator_if_provided()
+        -> Result<(), Box<dyn Error>> {
+            let mut server = mockito::Server::new_async().await;
+
+            let get_wallpapers_request = GetWallpapersRequest::builder()
+                .filter_res_operator(Operator::Equal)
+                .build();
+
+            let mock = server
+                .mock(
+                    "GET",
+                    Matcher::Regex(r"^/v2/core/wallpapers.*$".to_string()),
+                )
+                .match_query(Matcher::Regex("filter_res_operator=%3D".to_string()))
+                .with_status(200)
+                .with_header("content-type", "application/json")
+                .with_body(fs::read_to_string(
+                    "resources/get_wallpapers_success_fully_populated.json",
+                )?)
+                .create_async()
+                .await;
+
+            let client =
+                DigitalBlasphemyClient::new_test("api_key".to_string(), server.url().to_string())?;
+
+            client.get_wallpapers(get_wallpapers_request).await.unwrap();
+
+            mock.assert_async().await;
+
+            Ok(())
+        }
+
+        #[tokio::test]
+        async fn get_wallpapers_does_send_filter_res_operator_height_if_not_provided()
+        -> Result<(), Box<dyn Error>> {
+            let mut server = mockito::Server::new_async().await;
+
+            let get_wallpapers_request = GetWallpapersRequest::builder().build();
+
+            let mock = server
+                .mock(
+                    "GET",
+                    Matcher::Regex(r"^/v2/core/wallpapers.*$".to_string()),
+                )
+                .match_query(Matcher::Regex(
+                    "filter_res_operator_height=%3E%3D".to_string(),
+                ))
+                .with_status(200)
+                .with_header("content-type", "application/json")
+                .with_body(fs::read_to_string(
+                    "resources/get_wallpapers_success_fully_populated.json",
+                )?)
+                .create_async()
+                .await;
+
+            let client =
+                DigitalBlasphemyClient::new_test("api_key".to_string(), server.url().to_string())?;
+
+            client.get_wallpapers(get_wallpapers_request).await.unwrap();
+
+            mock.assert_async().await;
+
+            Ok(())
+        }
+
+        #[tokio::test]
+        async fn get_wallpapers_does_send_filter_res_operator_height_if_provided()
+        -> Result<(), Box<dyn Error>> {
+            let mut server = mockito::Server::new_async().await;
+
+            let get_wallpapers_request = GetWallpapersRequest::builder()
+                .filter_res_operator_height(Operator::Equal)
+                .build();
+
+            let mock = server
+                .mock(
+                    "GET",
+                    Matcher::Regex(r"^/v2/core/wallpapers.*$".to_string()),
+                )
+                .match_query(Matcher::Regex("filter_res_operator_height=%3D".to_string()))
+                .with_status(200)
+                .with_header("content-type", "application/json")
+                .with_body(fs::read_to_string(
+                    "resources/get_wallpapers_success_fully_populated.json",
+                )?)
+                .create_async()
+                .await;
+
+            let client =
+                DigitalBlasphemyClient::new_test("api_key".to_string(), server.url().to_string())?;
+
+            client.get_wallpapers(get_wallpapers_request).await.unwrap();
+
+            mock.assert_async().await;
+
+            Ok(())
+        }
+
+        #[tokio::test]
+        async fn get_wallpapers_does_send_filter_res_operator_width_if_not_provided()
+        -> Result<(), Box<dyn Error>> {
+            let mut server = mockito::Server::new_async().await;
+
+            let get_wallpapers_request = GetWallpapersRequest::builder().build();
+
+            let mock = server
+                .mock(
+                    "GET",
+                    Matcher::Regex(r"^/v2/core/wallpapers.*$".to_string()),
+                )
+                .match_query(Matcher::Regex(
+                    "filter_res_operator_width=%3E%3D".to_string(),
+                ))
+                .with_status(200)
+                .with_header("content-type", "application/json")
+                .with_body(fs::read_to_string(
+                    "resources/get_wallpapers_success_fully_populated.json",
+                )?)
+                .create_async()
+                .await;
+
+            let client =
+                DigitalBlasphemyClient::new_test("api_key".to_string(), server.url().to_string())?;
+
+            client.get_wallpapers(get_wallpapers_request).await.unwrap();
+
+            mock.assert_async().await;
+
+            Ok(())
+        }
+
+        #[tokio::test]
+        async fn get_wallpapers_does_send_filter_res_operator_width_if_provided()
+        -> Result<(), Box<dyn Error>> {
+            let mut server = mockito::Server::new_async().await;
+
+            let get_wallpapers_request = GetWallpapersRequest::builder()
+                .filter_res_operator_width(Operator::Equal)
+                .build();
+
+            let mock = server
+                .mock(
+                    "GET",
+                    Matcher::Regex(r"^/v2/core/wallpapers.*$".to_string()),
+                )
+                .match_query(Matcher::Regex("filter_res_operator_width=%3D".to_string()))
+                .with_status(200)
+                .with_header("content-type", "application/json")
+                .with_body(fs::read_to_string(
+                    "resources/get_wallpapers_success_fully_populated.json",
+                )?)
+                .create_async()
+                .await;
+
+            let client =
+                DigitalBlasphemyClient::new_test("api_key".to_string(), server.url().to_string())?;
+
+            client.get_wallpapers(get_wallpapers_request).await.unwrap();
+
+            mock.assert_async().await;
+
+            Ok(())
+        }
+
+        #[tokio::test]
+        async fn get_wallpapers_does_not_send_filter_res_width_if_not_provided()
+        -> Result<(), Box<dyn Error>> {
+            let mut server = mockito::Server::new_async().await;
+
+            let get_wallpapers_request = GetWallpapersRequest::builder().build();
+
+            let mock = server
+                .mock(
+                    "GET",
+                    Matcher::Regex(r"^/v2/core/wallpapers.*$".to_string()),
+                )
+                .match_query(Matcher::Regex("[^filter_res_width]".to_string()))
+                .with_status(200)
+                .with_header("content-type", "application/json")
+                .with_body(fs::read_to_string(
+                    "resources/get_wallpapers_success_fully_populated.json",
+                )?)
+                .create_async()
+                .await;
+
+            let client =
+                DigitalBlasphemyClient::new_test("api_key".to_string(), server.url().to_string())?;
+
+            client.get_wallpapers(get_wallpapers_request).await.unwrap();
+
+            mock.assert_async().await;
+
+            Ok(())
+        }
+
+        #[tokio::test]
+        async fn get_wallpapers_does_send_filter_res_width_if_provided()
+        -> Result<(), Box<dyn Error>> {
+            let mut server = mockito::Server::new_async().await;
+
+            let get_wallpapers_request =
+                GetWallpapersRequest::builder().filter_res_width(1).build();
+
+            let mock = server
+                .mock(
+                    "GET",
+                    Matcher::Regex(r"^/v2/core/wallpapers.*$".to_string()),
+                )
+                .match_query(Matcher::Regex("filter_res_width=1".to_string()))
+                .with_status(200)
+                .with_header("content-type", "application/json")
+                .with_body(fs::read_to_string(
+                    "resources/get_wallpapers_success_fully_populated.json",
+                )?)
+                .create_async()
+                .await;
+
+            let client =
+                DigitalBlasphemyClient::new_test("api_key".to_string(), server.url().to_string())?;
+
+            client.get_wallpapers(get_wallpapers_request).await.unwrap();
+
+            mock.assert_async().await;
+
+            Ok(())
+        }
+
+        #[tokio::test]
+        async fn get_wallpapers_does_not_send_filter_tag_if_not_provided()
+        -> Result<(), Box<dyn Error>> {
+            let mut server = mockito::Server::new_async().await;
+
+            let get_wallpapers_request = GetWallpapersRequest::builder().build();
+
+            let mock = server
+                .mock(
+                    "GET",
+                    Matcher::Regex(r"^/v2/core/wallpapers.*$".to_string()),
+                )
+                .match_query(Matcher::Regex("[^filter_tag]".to_string()))
+                .with_status(200)
+                .with_header("content-type", "application/json")
+                .with_body(fs::read_to_string(
+                    "resources/get_wallpapers_success_fully_populated.json",
+                )?)
+                .create_async()
+                .await;
+
+            let client =
+                DigitalBlasphemyClient::new_test("api_key".to_string(), server.url().to_string())?;
+
+            client.get_wallpapers(get_wallpapers_request).await.unwrap();
+
+            mock.assert_async().await;
+
+            Ok(())
+        }
+
+        #[tokio::test]
+        async fn get_wallpapers_does_send_filter_tag_if_provided() -> Result<(), Box<dyn Error>> {
+            let mut server = mockito::Server::new_async().await;
+
+            let get_wallpapers_request = GetWallpapersRequest::builder()
+                .filter_tag(vec![1, 2])
+                .build();
+
+            let mock = server
+                .mock(
+                    "GET",
+                    Matcher::Regex(r"^/v2/core/wallpapers.*$".to_string()),
+                )
+                .match_query(Matcher::Regex("filter_tag=1&filter_tag=2".to_string()))
+                .with_status(200)
+                .with_header("content-type", "application/json")
+                .with_body(fs::read_to_string(
+                    "resources/get_wallpapers_success_fully_populated.json",
+                )?)
+                .create_async()
+                .await;
+
+            let client =
+                DigitalBlasphemyClient::new_test("api_key".to_string(), server.url().to_string())?;
+
+            client.get_wallpapers(get_wallpapers_request).await.unwrap();
+
+            mock.assert_async().await;
+
+            Ok(())
+        }
+
+        #[tokio::test]
+        async fn get_wallpapers_does_send_limit_if_not_provided() -> Result<(), Box<dyn Error>> {
+            let mut server = mockito::Server::new_async().await;
+
+            let get_wallpapers_request = GetWallpapersRequest::builder().build();
+
+            let mock = server
+                .mock(
+                    "GET",
+                    Matcher::Regex(r"^/v2/core/wallpapers.*$".to_string()),
+                )
+                .match_query(Matcher::Regex("limit=10".to_string()))
+                .with_status(200)
+                .with_header("content-type", "application/json")
+                .with_body(fs::read_to_string(
+                    "resources/get_wallpapers_success_fully_populated.json",
+                )?)
+                .create_async()
+                .await;
+
+            let client =
+                DigitalBlasphemyClient::new_test("api_key".to_string(), server.url().to_string())?;
+
+            client.get_wallpapers(get_wallpapers_request).await.unwrap();
+
+            mock.assert_async().await;
+
+            Ok(())
+        }
+
+        #[tokio::test]
+        async fn get_wallpapers_does_send_limit_if_provided() -> Result<(), Box<dyn Error>> {
+            let mut server = mockito::Server::new_async().await;
+
+            let get_wallpapers_request = GetWallpapersRequest::builder().limit(1).build();
+
+            let mock = server
+                .mock(
+                    "GET",
+                    Matcher::Regex(r"^/v2/core/wallpapers.*$".to_string()),
+                )
+                .match_query(Matcher::Regex("limit=1".to_string()))
+                .with_status(200)
+                .with_header("content-type", "application/json")
+                .with_body(fs::read_to_string(
+                    "resources/get_wallpapers_success_fully_populated.json",
+                )?)
+                .create_async()
+                .await;
+
+            let client =
+                DigitalBlasphemyClient::new_test("api_key".to_string(), server.url().to_string())?;
+
+            client.get_wallpapers(get_wallpapers_request).await.unwrap();
+
+            mock.assert_async().await;
+
+            Ok(())
+        }
+
+        #[tokio::test]
+        async fn get_wallpapers_does_send_order_if_not_provided() -> Result<(), Box<dyn Error>> {
+            let mut server = mockito::Server::new_async().await;
+
+            let get_wallpapers_request = GetWallpapersRequest::builder().build();
+
+            let mock = server
+                .mock(
+                    "GET",
+                    Matcher::Regex(r"^/v2/core/wallpapers.*$".to_string()),
+                )
+                .match_query(Matcher::Regex("order=asc".to_string()))
+                .with_status(200)
+                .with_header("content-type", "application/json")
+                .with_body(fs::read_to_string(
+                    "resources/get_wallpapers_success_fully_populated.json",
+                )?)
+                .create_async()
+                .await;
+
+            let client =
+                DigitalBlasphemyClient::new_test("api_key".to_string(), server.url().to_string())?;
+
+            client.get_wallpapers(get_wallpapers_request).await.unwrap();
+
+            mock.assert_async().await;
+
+            Ok(())
+        }
+
+        #[tokio::test]
+        async fn get_wallpapers_does_send_order_if_provided() -> Result<(), Box<dyn Error>> {
+            let mut server = mockito::Server::new_async().await;
+
+            let get_wallpapers_request = GetWallpapersRequest::builder()
+                .order(Order::Descending)
+                .build();
+
+            let mock = server
+                .mock(
+                    "GET",
+                    Matcher::Regex(r"^/v2/core/wallpapers.*$".to_string()),
+                )
+                .match_query(Matcher::Regex("order=desc".to_string()))
+                .with_status(200)
+                .with_header("content-type", "application/json")
+                .with_body(fs::read_to_string(
+                    "resources/get_wallpapers_success_fully_populated.json",
+                )?)
+                .create_async()
+                .await;
+
+            let client =
+                DigitalBlasphemyClient::new_test("api_key".to_string(), server.url().to_string())?;
+
+            client.get_wallpapers(get_wallpapers_request).await.unwrap();
+
+            mock.assert_async().await;
+
+            Ok(())
+        }
+
+        #[tokio::test]
+        async fn get_wallpapers_does_not_send_order_by_if_date() -> Result<(), Box<dyn Error>> {
+            let mut server = mockito::Server::new_async().await;
+
+            let get_wallpapers_request = GetWallpapersRequest::builder()
+                .order_by(GetWallpapersOrderBy::Date)
+                .build();
+
+            let mock = server
+                .mock(
+                    "GET",
+                    Matcher::Regex(r"^/v2/core/wallpapers.*$".to_string()),
+                )
+                .match_query(Matcher::Regex("[^order_by]".to_string()))
+                .with_status(200)
+                .with_header("content-type", "application/json")
+                .with_body(fs::read_to_string(
+                    "resources/get_wallpapers_success_fully_populated.json",
+                )?)
+                .create_async()
+                .await;
+
+            let client =
+                DigitalBlasphemyClient::new_test("api_key".to_string(), server.url().to_string())?;
+
+            client.get_wallpapers(get_wallpapers_request).await.unwrap();
+
+            mock.assert_async().await;
+
+            Ok(())
+        }
+
+        #[tokio::test]
+        async fn get_wallpapers_does_send_order_by_if_not_date() -> Result<(), Box<dyn Error>> {
+            let mut server = mockito::Server::new_async().await;
+
+            let get_wallpapers_request = GetWallpapersRequest::builder()
+                .order_by(GetWallpapersOrderBy::Name)
+                .build();
+
+            let mock = server
+                .mock(
+                    "GET",
+                    Matcher::Regex(r"^/v2/core/wallpapers.*$".to_string()),
+                )
+                .match_query(Matcher::Regex("order_by=name".to_string()))
+                .with_status(200)
+                .with_header("content-type", "application/json")
+                .with_body(fs::read_to_string(
+                    "resources/get_wallpapers_success_fully_populated.json",
+                )?)
+                .create_async()
+                .await;
+
+            let client =
+                DigitalBlasphemyClient::new_test("api_key".to_string(), server.url().to_string())?;
+
+            client.get_wallpapers(get_wallpapers_request).await.unwrap();
+
+            mock.assert_async().await;
+
+            Ok(())
+        }
+
+        #[tokio::test]
+        async fn get_wallpapers_does_send_page_if_not_provided() -> Result<(), Box<dyn Error>> {
+            let mut server = mockito::Server::new_async().await;
+
+            let get_wallpapers_request = GetWallpapersRequest::builder().build();
+
+            let mock = server
+                .mock(
+                    "GET",
+                    Matcher::Regex(r"^/v2/core/wallpapers.*$".to_string()),
+                )
+                .match_query(Matcher::Regex("page=1".to_string()))
+                .with_status(200)
+                .with_header("content-type", "application/json")
+                .with_body(fs::read_to_string(
+                    "resources/get_wallpapers_success_fully_populated.json",
+                )?)
+                .create_async()
+                .await;
+
+            let client =
+                DigitalBlasphemyClient::new_test("api_key".to_string(), server.url().to_string())?;
+
+            client.get_wallpapers(get_wallpapers_request).await.unwrap();
+
+            mock.assert_async().await;
+
+            Ok(())
+        }
+
+        #[tokio::test]
+        async fn get_wallpapers_does_send_page_if_provided() -> Result<(), Box<dyn Error>> {
+            let mut server = mockito::Server::new_async().await;
+
+            let get_wallpapers_request = GetWallpapersRequest::builder().page(2).build();
+
+            let mock = server
+                .mock(
+                    "GET",
+                    Matcher::Regex(r"^/v2/core/wallpapers.*$".to_string()),
+                )
+                .match_query(Matcher::Regex("page=2".to_string()))
+                .with_status(200)
+                .with_header("content-type", "application/json")
+                .with_body(fs::read_to_string(
+                    "resources/get_wallpapers_success_fully_populated.json",
+                )?)
+                .create_async()
+                .await;
+
+            let client =
+                DigitalBlasphemyClient::new_test("api_key".to_string(), server.url().to_string())?;
+
+            client.get_wallpapers(get_wallpapers_request).await.unwrap();
+
+            mock.assert_async().await;
+
+            Ok(())
+        }
+
+        #[tokio::test]
+        async fn get_wallpapers_does_not_send_s_if_not_provided() -> Result<(), Box<dyn Error>> {
+            let mut server = mockito::Server::new_async().await;
+
+            let get_wallpapers_request = GetWallpapersRequest::builder().build();
+
+            let mock = server
+                .mock(
+                    "GET",
+                    Matcher::Regex(r"^/v2/core/wallpapers.*$".to_string()),
+                )
+                .match_query(Matcher::Regex("[^s]".to_string()))
+                .with_status(200)
+                .with_header("content-type", "application/json")
+                .with_body(fs::read_to_string(
+                    "resources/get_wallpapers_success_fully_populated.json",
+                )?)
+                .create_async()
+                .await;
+
+            let client =
+                DigitalBlasphemyClient::new_test("api_key".to_string(), server.url().to_string())?;
+
+            client.get_wallpapers(get_wallpapers_request).await.unwrap();
+
+            mock.assert_async().await;
+
+            Ok(())
+        }
+
+        #[tokio::test]
+        async fn get_wallpapers_does_send_s_if_provided() -> Result<(), Box<dyn Error>> {
+            let mut server = mockito::Server::new_async().await;
+
+            let get_wallpapers_request = GetWallpapersRequest::builder()
+                .s("search".to_string())
+                .build();
+
+            let mock = server
+                .mock(
+                    "GET",
+                    Matcher::Regex(r"^/v2/core/wallpapers.*$".to_string()),
+                )
+                .match_query(Matcher::Regex("s=search".to_string()))
+                .with_status(200)
+                .with_header("content-type", "application/json")
+                .with_body(fs::read_to_string(
+                    "resources/get_wallpapers_success_fully_populated.json",
+                )?)
+                .create_async()
+                .await;
+
+            let client =
+                DigitalBlasphemyClient::new_test("api_key".to_string(), server.url().to_string())?;
+
+            client.get_wallpapers(get_wallpapers_request).await.unwrap();
+
+            mock.assert_async().await;
+
+            Ok(())
+        }
+
+        #[tokio::test]
+        async fn get_wallpapers_does_send_show_comments_if_not_provided()
+        -> Result<(), Box<dyn Error>> {
+            let mut server = mockito::Server::new_async().await;
+
+            let get_wallpapers_request = GetWallpapersRequest::builder().build();
+
+            let mock = server
+                .mock(
+                    "GET",
+                    Matcher::Regex(r"^/v2/core/wallpapers.*$".to_string()),
+                )
+                .match_query(Matcher::Regex("show_comments=false".to_string()))
+                .with_status(200)
+                .with_header("content-type", "application/json")
+                .with_body(fs::read_to_string(
+                    "resources/get_wallpapers_success_fully_populated.json",
+                )?)
+                .create_async()
+                .await;
+
+            let client =
+                DigitalBlasphemyClient::new_test("api_key".to_string(), server.url().to_string())?;
+
+            client.get_wallpapers(get_wallpapers_request).await.unwrap();
+
+            mock.assert_async().await;
+
+            Ok(())
+        }
+
+        #[tokio::test]
+        async fn get_wallpapers_does_send_show_comments_if_provided() -> Result<(), Box<dyn Error>>
+        {
+            let mut server = mockito::Server::new_async().await;
+
+            let get_wallpapers_request =
+                GetWallpapersRequest::builder().show_comments(true).build();
+
+            let mock = server
+                .mock(
+                    "GET",
+                    Matcher::Regex(r"^/v2/core/wallpapers.*$".to_string()),
+                )
+                .match_query(Matcher::Regex("show_comments=true".to_string()))
+                .with_status(200)
+                .with_header("content-type", "application/json")
+                .with_body(fs::read_to_string(
+                    "resources/get_wallpapers_success_fully_populated.json",
+                )?)
+                .create_async()
+                .await;
+
+            let client =
+                DigitalBlasphemyClient::new_test("api_key".to_string(), server.url().to_string())?;
+
+            client.get_wallpapers(get_wallpapers_request).await.unwrap();
+
+            mock.assert_async().await;
+
+            Ok(())
+        }
+
+        #[tokio::test]
+        async fn get_wallpapers_does_send_show_pickle_jar_if_not_provided()
+        -> Result<(), Box<dyn Error>> {
+            let mut server = mockito::Server::new_async().await;
+
+            let get_wallpapers_request = GetWallpapersRequest::builder().build();
+
+            let mock = server
+                .mock(
+                    "GET",
+                    Matcher::Regex(r"^/v2/core/wallpapers.*$".to_string()),
+                )
+                .match_query(Matcher::Regex("show_pickle_jar=false".to_string()))
+                .with_status(200)
+                .with_header("content-type", "application/json")
+                .with_body(fs::read_to_string(
+                    "resources/get_wallpapers_success_fully_populated.json",
+                )?)
+                .create_async()
+                .await;
+
+            let client =
+                DigitalBlasphemyClient::new_test("api_key".to_string(), server.url().to_string())?;
+
+            client.get_wallpapers(get_wallpapers_request).await.unwrap();
+
+            mock.assert_async().await;
+
+            Ok(())
+        }
+
+        #[tokio::test]
+        async fn get_wallpapers_does_send_show_pickle_jar_if_provided() -> Result<(), Box<dyn Error>>
+        {
+            let mut server = mockito::Server::new_async().await;
+
+            let get_wallpapers_request = GetWallpapersRequest::builder()
+                .show_pickle_jar(true)
+                .build();
+
+            let mock = server
+                .mock(
+                    "GET",
+                    Matcher::Regex(r"^/v2/core/wallpapers.*$".to_string()),
+                )
+                .match_query(Matcher::Regex("show_pickle_jar=true".to_string()))
+                .with_status(200)
+                .with_header("content-type", "application/json")
+                .with_body(fs::read_to_string(
+                    "resources/get_wallpapers_success_fully_populated.json",
+                )?)
+                .create_async()
+                .await;
+
+            let client =
+                DigitalBlasphemyClient::new_test("api_key".to_string(), server.url().to_string())?;
+
+            client.get_wallpapers(get_wallpapers_request).await.unwrap();
+
+            mock.assert_async().await;
+
+            Ok(())
+        }
+
+        #[tokio::test]
+        async fn get_wallpapers_does_send_show_resolutions_if_not_provided()
+        -> Result<(), Box<dyn Error>> {
+            let mut server = mockito::Server::new_async().await;
+
+            let get_wallpapers_request = GetWallpapersRequest::builder().build();
+
+            let mock = server
+                .mock(
+                    "GET",
+                    Matcher::Regex(r"^/v2/core/wallpapers.*$".to_string()),
+                )
+                .match_query(Matcher::Regex("show_resolutions=true".to_string()))
+                .with_status(200)
+                .with_header("content-type", "application/json")
+                .with_body(fs::read_to_string(
+                    "resources/get_wallpapers_success_fully_populated.json",
+                )?)
+                .create_async()
+                .await;
+
+            let client =
+                DigitalBlasphemyClient::new_test("api_key".to_string(), server.url().to_string())?;
+
+            client.get_wallpapers(get_wallpapers_request).await.unwrap();
+
+            mock.assert_async().await;
+
+            Ok(())
+        }
+
+        #[tokio::test]
+        async fn get_wallpapers_does_send_show_resolutions_if_provided()
+        -> Result<(), Box<dyn Error>> {
+            let mut server = mockito::Server::new_async().await;
+
+            let get_wallpapers_request = GetWallpapersRequest::builder()
+                .show_resolutions(false)
+                .build();
+
+            let mock = server
+                .mock(
+                    "GET",
+                    Matcher::Regex(r"^/v2/core/wallpapers.*$".to_string()),
+                )
+                .match_query(Matcher::Regex("show_resolutions=false".to_string()))
+                .with_status(200)
+                .with_header("content-type", "application/json")
+                .with_body(fs::read_to_string(
+                    "resources/get_wallpapers_success_fully_populated.json",
+                )?)
+                .create_async()
+                .await;
+
+            let client =
+                DigitalBlasphemyClient::new_test("api_key".to_string(), server.url().to_string())?;
+
+            client.get_wallpapers(get_wallpapers_request).await.unwrap();
+
+            mock.assert_async().await;
+
+            Ok(())
+        }
+        #[tokio::test]
+        async fn get_wallpapers_can_map_successful_response_fully_populated()
+        -> Result<(), Box<dyn Error>> {
+            let mut server = mockito::Server::new_async().await;
+
+            let get_wallpapers_request = GetWallpapersRequest::builder().build();
+
+            let mock = server
+                .mock(
+                    "GET",
+                    mockito::Matcher::Regex(r"^/v2/core/wallpapers.*$".to_string()),
+                )
+                .with_status(200)
+                .with_header("content-type", "application/json")
+                .with_body(fs::read_to_string(
+                    "resources/get_wallpapers_success_fully_populated.json",
+                )?)
+                .create_async()
+                .await;
+
+            let client =
+                DigitalBlasphemyClient::new_test("api_key".to_string(), server.url().to_string())?;
+
+            let get_wallpapers_response =
+                client.get_wallpapers(get_wallpapers_request).await.unwrap();
+
+            let expected_wallpaper_13 = Wallpaper {
+                id: 13,
+                all_free: Some(true),
+                comments: Some(Comments {
+                    comments: vec![
+                        Comment {
+                            id: "14".to_string(),
+                            author_id: "author ID 1".to_string(),
+                            author_display: "author display 1".to_string(),
+                            content: "Content 1".to_string(),
+                            rating: "15".to_string(),
+                            timestamp: 16,
+                        },
+                        Comment {
+                            id: "17".to_string(),
+                            author_id: "author ID 2".to_string(),
+                            author_display: "author display 2".to_string(),
+                            content: "Content 2".to_string(),
+                            rating: "18".to_string(),
+                            timestamp: 19,
+                        },
+                    ],
+                }),
+                content: Some("Content 3".to_string()),
+                free: Some(true),
+                name: "Vulcan".to_string(),
+                paths: Paths {
+                    api: "/wallpaper/13".to_string(),
+                    thumb: "/thumbnail/21x22/vulcan_thumbnail_21x22.jpg".to_string(),
+                    web: "/sec/vulcan/".to_string(),
                 },
-                request: GetWallpapersDBCoreRequest {
-                    query: GetWallpapersResponseQuery {
-                        filter_date_day: Some(2),
-                        filter_date_month: Some(3),
-                        filter_date_year: Some(4),
-                        filter_date_operator: Operator::Equal,
-                        filter_gallery: Some(vec![5]),
-                        filter_rating: Some(6_f32),
-                        filter_rating_operator: Some(Operator::GreaterThanOrEqual),
-                        filter_res_operator_height: Some(Operator::GreaterThanOrEqual),
-                        filter_res_operator_width: Some(Operator::GreaterThanOrEqual),
-                        filter_res_height: 7,
-                        filter_res_operator: Operator::GreaterThanOrEqual,
-                        filter_res_width: 8,
-                        filter_tag: Some(vec![9]),
-                        limit: 10,
-                        order: Order::Ascending,
-                        order_by: GetWallpapersOrderBy::Name,
-                        page: 11,
-                        s: Some("search".to_string()),
-                        show_comments: true,
-                        show_pickle_jar: true,
-                        show_resolutions: true,
-                    },
+                pickle_jar: Some(PickleJar {
+                    parent: "parent 1".to_string(),
+                    siblings: vec!["sibling 1".to_string(), "sibling 2".to_string()],
+                }),
+                rating: Some("20".to_string()),
+                resolutions: Some(Resolutions {
+                    single: vec![
+                        Resolution {
+                            label: "21x22".to_string(),
+                            width: "21".to_string(),
+                            height: "22".to_string(),
+                            image: "/single/21x22/vulcan_single_21x22.jpg".to_string(),
+                        },
+                        Resolution {
+                            label: "23x24".to_string(),
+                            width: "23".to_string(),
+                            height: "24".to_string(),
+                            image: "/single/23x24/vulcan_single_23x24.jpg".to_string(),
+                        },
+                    ],
+                    dual: Some(vec![
+                        Resolution {
+                            label: "25x26".to_string(),
+                            width: "25".to_string(),
+                            height: "26".to_string(),
+                            image: "/dual/25x26/vulcan_dual_25x26.jpg".to_string(),
+                        },
+                        Resolution {
+                            label: "27x28".to_string(),
+                            width: "27".to_string(),
+                            height: "28".to_string(),
+                            image: "/dual/27x28/vulcan_dual_27x28.jpg".to_string(),
+                        },
+                    ]),
+                    triple: Some(vec![
+                        Resolution {
+                            label: "29x30".to_string(),
+                            width: "29".to_string(),
+                            height: "30".to_string(),
+                            image: "/triple/29x30/vulcan_triple_29x30.jpg".to_string(),
+                        },
+                        Resolution {
+                            label: "31x32".to_string(),
+                            width: "31".to_string(),
+                            height: "32".to_string(),
+                            image: "/triple/31x32/vulcan_triple_31x32.jpg".to_string(),
+                        },
+                    ]),
+                    mobile: Some(vec![
+                        Resolution {
+                            label: "33x34".to_string(),
+                            width: "33".to_string(),
+                            height: "34".to_string(),
+                            image: "/mobile/33x34/vulcan_mobile_33x34.jpg".to_string(),
+                        },
+                        Resolution {
+                            label: "33x34".to_string(),
+                            width: "33".to_string(),
+                            height: "34".to_string(),
+                            image: "/mobile/33x34/vulcan_mobile_33x34.jpg".to_string(),
+                        },
+                    ]),
+                }),
+                sku: Some("vulcan".to_string()),
+                tags: Some(HashMap::from([
+                    (
+                        "35".to_string(),
+                        Tag {
+                            id: 35,
+                            name: "Tag 1".to_string(),
+                        },
+                    ),
+                    (
+                        "36".to_string(),
+                        Tag {
+                            id: 36,
+                            name: "Tag 2".to_string(),
+                        },
+                    ),
+                ])),
+                timestamp: Some(37),
+            };
+            let expected_wallpaper_38 = Wallpaper {
+                id: 38,
+                all_free: Some(false),
+                comments: Some(Comments {
+                    comments: vec![
+                        Comment {
+                            id: "39".to_string(),
+                            author_id: "author ID 3".to_string(),
+                            author_display: "author display 3".to_string(),
+                            content: "Content 4".to_string(),
+                            rating: "40".to_string(),
+                            timestamp: 41,
+                        },
+                        Comment {
+                            id: "42".to_string(),
+                            author_id: "author ID 4".to_string(),
+                            author_display: "author display 4".to_string(),
+                            content: "Content 5".to_string(),
+                            rating: "43".to_string(),
+                            timestamp: 44,
+                        },
+                    ],
+                }),
+                content: Some("Content 6".to_string()),
+                free: Some(false),
+                name: "Valley I".to_string(),
+                paths: Paths {
+                    api: "/wallpaper/38".to_string(),
+                    thumb: "/thumbnail/46x47/valley_thumbnail_46x47.jpg".to_string(),
+                    web: "/sec/valley/".to_string(),
                 },
-                total_pages: 12,
-                wallpapers: HashMap::from([
-                    ("13".to_string(), expected_wallpaper_13),
-                    ("38".to_string(), expected_wallpaper_38),
-                ]),
-            },
-        };
-        assert_eq!(get_wallpapers_response, expected_get_wallpapers_response);
+                pickle_jar: Some(PickleJar {
+                    parent: "parent 2".to_string(),
+                    siblings: vec!["sibling 3".to_string(), "sibling 4".to_string()],
+                }),
+                rating: Some("45".to_string()),
+                resolutions: Some(Resolutions {
+                    single: vec![
+                        Resolution {
+                            label: "46x47".to_string(),
+                            width: "46".to_string(),
+                            height: "47".to_string(),
+                            image: "/single/46x47/valley_single_46x47.jpg".to_string(),
+                        },
+                        Resolution {
+                            label: "48x49".to_string(),
+                            width: "48".to_string(),
+                            height: "49".to_string(),
+                            image: "/single/48x49/valley_single_48x49.jpg".to_string(),
+                        },
+                    ],
+                    dual: Some(vec![
+                        Resolution {
+                            label: "50x51".to_string(),
+                            width: "50".to_string(),
+                            height: "51".to_string(),
+                            image: "/dual/50x51/valley_dual_50x51.jpg".to_string(),
+                        },
+                        Resolution {
+                            label: "52x53".to_string(),
+                            width: "52".to_string(),
+                            height: "53".to_string(),
+                            image: "/dual/52x53/valley_dual_52x53.jpg".to_string(),
+                        },
+                    ]),
+                    triple: Some(vec![
+                        Resolution {
+                            label: "54x55".to_string(),
+                            width: "54".to_string(),
+                            height: "55".to_string(),
+                            image: "/triple/54x55/valley_triple_54x55.jpg".to_string(),
+                        },
+                        Resolution {
+                            label: "56x57".to_string(),
+                            width: "56".to_string(),
+                            height: "57".to_string(),
+                            image: "/triple/56x57/valley_triple_56x57.jpg".to_string(),
+                        },
+                    ]),
+                    mobile: Some(vec![
+                        Resolution {
+                            label: "58x59".to_string(),
+                            width: "58".to_string(),
+                            height: "59".to_string(),
+                            image: "/mobile/58x59/valley_mobile_58x59.jpg".to_string(),
+                        },
+                        Resolution {
+                            label: "60x61".to_string(),
+                            width: "60".to_string(),
+                            height: "61".to_string(),
+                            image: "/mobile/60x61/valley_mobile_60x61.jpg".to_string(),
+                        },
+                    ]),
+                }),
+                sku: Some("valley".to_string()),
+                tags: Some(HashMap::from([
+                    (
+                        "63".to_string(),
+                        Tag {
+                            id: 63,
+                            name: "Tag 4".to_string(),
+                        },
+                    ),
+                    (
+                        "62".to_string(),
+                        Tag {
+                            id: 62,
+                            name: "Tag 3".to_string(),
+                        },
+                    ),
+                ])),
+                timestamp: Some(64),
+            };
+            let expected_get_wallpapers_response = GetWallpapersResponse {
+                db_core: GetWallpapersDBCore {
+                    timestamp: 1,
+                    endpoints: Endpoints {
+                        api: "https://api.digitalblasphemy.com/v2/core".to_string(),
+                        image: "https://arcadia.digitalblasphemy.com".to_string(),
+                        thumb: "https://cdn.digitalblasphemy.com".to_string(),
+                        web: "https://digitalblasphemy.com".to_string(),
+                    },
+                    request: GetWallpapersDBCoreRequest {
+                        query: GetWallpapersResponseQuery {
+                            filter_date_day: Some(2),
+                            filter_date_month: Some(3),
+                            filter_date_year: Some(4),
+                            filter_date_operator: Operator::Equal,
+                            filter_gallery: Some(vec![5]),
+                            filter_rating: Some(6_f32),
+                            filter_rating_operator: Some(Operator::GreaterThanOrEqual),
+                            filter_res_operator_height: Some(Operator::GreaterThanOrEqual),
+                            filter_res_operator_width: Some(Operator::GreaterThanOrEqual),
+                            filter_res_height: 7,
+                            filter_res_operator: Operator::GreaterThanOrEqual,
+                            filter_res_width: 8,
+                            filter_tag: Some(vec![9]),
+                            limit: 10,
+                            order: Order::Ascending,
+                            order_by: GetWallpapersOrderBy::Name,
+                            page: 11,
+                            s: Some("search".to_string()),
+                            show_comments: true,
+                            show_pickle_jar: true,
+                            show_resolutions: true,
+                        },
+                    },
+                    total_pages: 12,
+                    wallpapers: HashMap::from([
+                        ("13".to_string(), expected_wallpaper_13),
+                        ("38".to_string(), expected_wallpaper_38),
+                    ]),
+                },
+            };
+            assert_eq!(get_wallpapers_response, expected_get_wallpapers_response);
 
-        mock.assert_async().await;
+            mock.assert_async().await;
 
-        Ok(())
+            Ok(())
+        }
+
+        #[tokio::test]
+        async fn get_wallpapers_can_map_successful_response_minimal_populated()
+        -> Result<(), Box<dyn Error>> {
+            let mut server = mockito::Server::new_async().await;
+
+            let get_wallpapers_request = GetWallpapersRequest::builder().build();
+
+            let mock = server
+                .mock(
+                    "GET",
+                    Matcher::Regex(r"^/v2/core/wallpapers.*$".to_string()),
+                )
+                .with_status(200)
+                .with_header("content-type", "application/json")
+                .with_body(fs::read_to_string(
+                    "resources/get_wallpapers_success_minimal_populated.json",
+                )?)
+                .create_async()
+                .await;
+
+            let client =
+                DigitalBlasphemyClient::new_test("api_key".to_string(), server.url().to_string())?;
+
+            let get_wallpapers_response =
+                client.get_wallpapers(get_wallpapers_request).await.unwrap();
+
+            let expected_wallpaper_7 = Wallpaper {
+                id: 7,
+                all_free: None,
+                comments: None,
+                content: None,
+                free: None,
+                name: "Vulcan".to_string(),
+                paths: Paths {
+                    api: "/wallpaper/13".to_string(),
+                    thumb: "/thumbnail/21x22/vulcan_thumbnail_21x22.jpg".to_string(),
+                    web: "/sec/vulcan/".to_string(),
+                },
+                pickle_jar: None,
+                rating: Some("8".to_string()),
+                resolutions: Some(Resolutions {
+                    single: vec![
+                        Resolution {
+                            label: "9x10".to_string(),
+                            width: "9".to_string(),
+                            height: "10".to_string(),
+                            image: "/single/9x10/vulcan_single_9x10.jpg".to_string(),
+                        },
+                        Resolution {
+                            label: "11x12".to_string(),
+                            width: "11".to_string(),
+                            height: "12".to_string(),
+                            image: "/single/11x12/vulcan_single_11x12.jpg".to_string(),
+                        },
+                    ],
+                    dual: None,
+                    triple: None,
+                    mobile: None,
+                }),
+                sku: None,
+                tags: None,
+                timestamp: None,
+            };
+            let expected_wallpaper_13 = Wallpaper {
+                id: 13,
+                all_free: None,
+                comments: None,
+                content: None,
+                free: None,
+                name: "Valley I".to_string(),
+                paths: Paths {
+                    api: "/wallpaper/13".to_string(),
+                    thumb: "/thumbnail/14x15/valley_thumbnail_14x15.jpg".to_string(),
+                    web: "/sec/valley/".to_string(),
+                },
+                pickle_jar: None,
+                rating: None,
+                resolutions: Some(Resolutions {
+                    single: vec![
+                        Resolution {
+                            label: "14x15".to_string(),
+                            width: "14".to_string(),
+                            height: "15".to_string(),
+                            image: "/single/14x15/valley_single_14x15.jpg".to_string(),
+                        },
+                        Resolution {
+                            label: "16x17".to_string(),
+                            width: "16".to_string(),
+                            height: "17".to_string(),
+                            image: "/single/16x17/valley_single_16x17.jpg".to_string(),
+                        },
+                    ],
+                    dual: None,
+                    triple: None,
+                    mobile: None,
+                }),
+                sku: None,
+                tags: None,
+                timestamp: None,
+            };
+            let expected_get_wallpapers_response = GetWallpapersResponse {
+                db_core: GetWallpapersDBCore {
+                    timestamp: 1,
+                    endpoints: Endpoints {
+                        api: "https://api.digitalblasphemy.com/v2/core".to_string(),
+                        image: "https://arcadia.digitalblasphemy.com".to_string(),
+                        thumb: "https://cdn.digitalblasphemy.com".to_string(),
+                        web: "https://digitalblasphemy.com".to_string(),
+                    },
+                    request: GetWallpapersDBCoreRequest {
+                        query: GetWallpapersResponseQuery {
+                            filter_date_day: None,
+                            filter_date_month: None,
+                            filter_date_year: None,
+                            filter_date_operator: Operator::Equal,
+                            filter_gallery: None,
+                            filter_rating: None,
+                            filter_rating_operator: None,
+                            filter_res_operator_height: None,
+                            filter_res_operator_width: None,
+                            filter_res_height: 2,
+                            filter_res_operator: Operator::GreaterThanOrEqual,
+                            filter_res_width: 3,
+                            filter_tag: None,
+                            limit: 4,
+                            order: Order::Ascending,
+                            order_by: GetWallpapersOrderBy::Name,
+                            page: 5,
+                            s: None,
+                            show_comments: false,
+                            show_pickle_jar: false,
+                            show_resolutions: false,
+                        },
+                    },
+                    total_pages: 6,
+                    wallpapers: HashMap::from([
+                        ("7".to_string(), expected_wallpaper_7),
+                        ("13".to_string(), expected_wallpaper_13),
+                    ]),
+                },
+            };
+            assert_eq!(get_wallpapers_response, expected_get_wallpapers_response);
+
+            mock.assert_async().await;
+
+            Ok(())
+        }
     }
 
-    #[tokio::test]
-    async fn get_wallpapers_can_map_successful_response_minimal_populated()
-    -> Result<(), Box<dyn Error>> {
-        let mut server = mockito::Server::new_async().await;
+    mod get_wallpaper {
+        use super::*;
 
-        let get_wallpapers_request = GetWallpapersRequest::builder().build();
+        #[tokio::test]
+        async fn get_wallpaper_does_not_send_filter_res_height_if_not_provided()
+        -> Result<(), Box<dyn Error>> {
+            let mut server = mockito::Server::new_async().await;
 
-        let mock = server
-            .mock(
-                "GET",
-                mockito::Matcher::Regex(r"^/v2/core/wallpapers.*$".to_string()),
-            )
-            .with_status(200)
-            .with_header("content-type", "application/json")
-            .with_body(fs::read_to_string(
-                "resources/get_wallpapers_success_minimal_populated.json",
-            )?)
-            .create_async()
-            .await;
+            let get_wallpaper_request = GetWallpaperRequest::builder().wallpaper_id(2).build();
 
-        let client =
-            DigitalBlasphemyClient::new_test("api_key".to_string(), server.url().to_string())?;
+            let mock = server
+                .mock("GET", Matcher::Regex(r"^/v2/core/wallpaper.*$".to_string()))
+                .match_query(Matcher::Regex("[^filter_res_height]".to_string()))
+                .with_status(200)
+                .with_header("content-type", "application/json")
+                .with_body(fs::read_to_string(
+                    "resources/get_wallpaper_success_fully_populated.json",
+                )?)
+                .create_async()
+                .await;
 
-        let get_wallpapers_response = client.get_wallpapers(get_wallpapers_request).await.unwrap();
+            let client =
+                DigitalBlasphemyClient::new_test("api_key".to_string(), server.url().to_string())?;
 
-        let expected_wallpaper_7 = Wallpaper {
-            id: 7,
-            all_free: None,
-            comments: None,
-            content: None,
-            free: None,
-            name: "Vulcan".to_string(),
-            paths: Paths {
-                api: "/wallpaper/13".to_string(),
-                thumb: "/thumbnail/21x22/vulcan_thumbnail_21x22.jpg".to_string(),
-                web: "/sec/vulcan/".to_string(),
-            },
-            pickle_jar: None,
-            rating: Some("8".to_string()),
-            resolutions: Some(Resolutions {
-                single: vec![
-                    Resolution {
-                        label: "9x10".to_string(),
-                        width: "9".to_string(),
-                        height: "10".to_string(),
-                        image: "/single/9x10/vulcan_single_9x10.jpg".to_string(),
-                    },
-                    Resolution {
-                        label: "11x12".to_string(),
-                        width: "11".to_string(),
-                        height: "12".to_string(),
-                        image: "/single/11x12/vulcan_single_11x12.jpg".to_string(),
-                    },
-                ],
-                dual: None,
-                triple: None,
-                mobile: None,
-            }),
-            sku: None,
-            tags: None,
-            timestamp: None,
-        };
-        let expected_wallpaper_13 = Wallpaper {
-            id: 13,
-            all_free: None,
-            comments: None,
-            content: None,
-            free: None,
-            name: "Valley I".to_string(),
-            paths: Paths {
-                api: "/wallpaper/13".to_string(),
-                thumb: "/thumbnail/14x15/valley_thumbnail_14x15.jpg".to_string(),
-                web: "/sec/valley/".to_string(),
-            },
-            pickle_jar: None,
-            rating: None,
-            resolutions: Some(Resolutions {
-                single: vec![
-                    Resolution {
-                        label: "14x15".to_string(),
-                        width: "14".to_string(),
-                        height: "15".to_string(),
-                        image: "/single/14x15/valley_single_14x15.jpg".to_string(),
-                    },
-                    Resolution {
-                        label: "16x17".to_string(),
-                        width: "16".to_string(),
-                        height: "17".to_string(),
-                        image: "/single/16x17/valley_single_16x17.jpg".to_string(),
-                    },
-                ],
-                dual: None,
-                triple: None,
-                mobile: None,
-            }),
-            sku: None,
-            tags: None,
-            timestamp: None,
-        };
-        let expected_get_wallpapers_response = GetWallpapersResponse {
-            db_core: GetWallpapersDBCore {
-                timestamp: 1,
-                endpoints: Endpoints {
-                    api: "https://api.digitalblasphemy.com/v2/core".to_string(),
-                    image: "https://arcadia.digitalblasphemy.com".to_string(),
-                    thumb: "https://cdn.digitalblasphemy.com".to_string(),
-                    web: "https://digitalblasphemy.com".to_string(),
+            client.get_wallpaper(&get_wallpaper_request).await.unwrap();
+
+            mock.assert_async().await;
+
+            Ok(())
+        }
+
+        #[tokio::test]
+        async fn get_wallpaper_does_send_filter_res_height_if_provided()
+        -> Result<(), Box<dyn Error>> {
+            let mut server = mockito::Server::new_async().await;
+
+            let get_wallpaper_request = GetWallpaperRequest::builder()
+                .wallpaper_id(2)
+                .filter_res_height(1)
+                .build();
+
+            let mock = server
+                .mock("GET", Matcher::Regex(r"^/v2/core/wallpaper.*$".to_string()))
+                .match_query(Matcher::Regex("filter_res_height=1".to_string()))
+                .with_status(200)
+                .with_header("content-type", "application/json")
+                .with_body(fs::read_to_string(
+                    "resources/get_wallpaper_success_fully_populated.json",
+                )?)
+                .create_async()
+                .await;
+
+            let client =
+                DigitalBlasphemyClient::new_test("api_key".to_string(), server.url().to_string())?;
+
+            client.get_wallpaper(&get_wallpaper_request).await.unwrap();
+
+            mock.assert_async().await;
+
+            Ok(())
+        }
+
+        #[tokio::test]
+        async fn get_wallpaper_does_not_send_filter_res_width_if_not_provided()
+        -> Result<(), Box<dyn Error>> {
+            let mut server = mockito::Server::new_async().await;
+
+            let get_wallpaper_request = GetWallpaperRequest::builder().wallpaper_id(2).build();
+
+            let mock = server
+                .mock("GET", Matcher::Regex(r"^/v2/core/wallpaper.*$".to_string()))
+                .match_query(Matcher::Regex("[^filter_res_width]".to_string()))
+                .with_status(200)
+                .with_header("content-type", "application/json")
+                .with_body(fs::read_to_string(
+                    "resources/get_wallpaper_success_fully_populated.json",
+                )?)
+                .create_async()
+                .await;
+
+            let client =
+                DigitalBlasphemyClient::new_test("api_key".to_string(), server.url().to_string())?;
+
+            client.get_wallpaper(&get_wallpaper_request).await.unwrap();
+
+            mock.assert_async().await;
+
+            Ok(())
+        }
+
+        #[tokio::test]
+        async fn get_wallpaper_does_send_filter_res_width_if_provided() -> Result<(), Box<dyn Error>>
+        {
+            let mut server = mockito::Server::new_async().await;
+
+            let get_wallpaper_request = GetWallpaperRequest::builder()
+                .wallpaper_id(2)
+                .filter_res_width(1)
+                .build();
+
+            let mock = server
+                .mock("GET", Matcher::Regex(r"^/v2/core/wallpaper.*$".to_string()))
+                .match_query(Matcher::Regex("filter_res_width=1".to_string()))
+                .with_status(200)
+                .with_header("content-type", "application/json")
+                .with_body(fs::read_to_string(
+                    "resources/get_wallpaper_success_fully_populated.json",
+                )?)
+                .create_async()
+                .await;
+
+            let client =
+                DigitalBlasphemyClient::new_test("api_key".to_string(), server.url().to_string())?;
+
+            client.get_wallpaper(&get_wallpaper_request).await.unwrap();
+
+            mock.assert_async().await;
+
+            Ok(())
+        }
+
+        #[tokio::test]
+        async fn get_wallpaper_does_send_filter_res_operator_if_not_provided()
+        -> Result<(), Box<dyn Error>> {
+            let mut server = mockito::Server::new_async().await;
+
+            let get_wallpaper_request = GetWallpaperRequest::builder().wallpaper_id(2).build();
+
+            let mock = server
+                .mock("GET", Matcher::Regex(r"^/v2/core/wallpaper.*$".to_string()))
+                .match_query(Matcher::Regex("filter_res_operator=%3E%3D".to_string()))
+                .with_status(200)
+                .with_header("content-type", "application/json")
+                .with_body(fs::read_to_string(
+                    "resources/get_wallpaper_success_fully_populated.json",
+                )?)
+                .create_async()
+                .await;
+
+            let client =
+                DigitalBlasphemyClient::new_test("api_key".to_string(), server.url().to_string())?;
+
+            client.get_wallpaper(&get_wallpaper_request).await.unwrap();
+
+            mock.assert_async().await;
+
+            Ok(())
+        }
+
+        #[tokio::test]
+        async fn get_wallpaper_does_send_filter_res_operator_if_provided()
+        -> Result<(), Box<dyn Error>> {
+            let mut server = mockito::Server::new_async().await;
+
+            let get_wallpaper_request = GetWallpaperRequest::builder()
+                .wallpaper_id(2)
+                .filter_res_operator(Operator::Equal)
+                .build();
+
+            let mock = server
+                .mock("GET", Matcher::Regex(r"^/v2/core/wallpaper.*$".to_string()))
+                .match_query(Matcher::Regex("filter_res_operator=%3D".to_string()))
+                .with_status(200)
+                .with_header("content-type", "application/json")
+                .with_body(fs::read_to_string(
+                    "resources/get_wallpaper_success_fully_populated.json",
+                )?)
+                .create_async()
+                .await;
+
+            let client =
+                DigitalBlasphemyClient::new_test("api_key".to_string(), server.url().to_string())?;
+
+            client.get_wallpaper(&get_wallpaper_request).await.unwrap();
+
+            mock.assert_async().await;
+
+            Ok(())
+        }
+
+        #[tokio::test]
+        async fn get_wallpaper_does_send_filter_res_operator_height_if_not_provided()
+        -> Result<(), Box<dyn Error>> {
+            let mut server = mockito::Server::new_async().await;
+
+            let get_wallpaper_request = GetWallpaperRequest::builder().wallpaper_id(2).build();
+
+            let mock = server
+                .mock("GET", Matcher::Regex(r"^/v2/core/wallpaper.*$".to_string()))
+                .match_query(Matcher::Regex(
+                    "filter_res_operator_height=%3E%3D".to_string(),
+                ))
+                .with_status(200)
+                .with_header("content-type", "application/json")
+                .with_body(fs::read_to_string(
+                    "resources/get_wallpaper_success_fully_populated.json",
+                )?)
+                .create_async()
+                .await;
+
+            let client =
+                DigitalBlasphemyClient::new_test("api_key".to_string(), server.url().to_string())?;
+
+            client.get_wallpaper(&get_wallpaper_request).await.unwrap();
+
+            mock.assert_async().await;
+
+            Ok(())
+        }
+
+        #[tokio::test]
+        async fn get_wallpaper_does_send_filter_res_operator_height_if_provided()
+        -> Result<(), Box<dyn Error>> {
+            let mut server = mockito::Server::new_async().await;
+
+            let get_wallpaper_request = GetWallpaperRequest::builder()
+                .wallpaper_id(2)
+                .filter_res_operator_height(Operator::Equal)
+                .build();
+
+            let mock = server
+                .mock("GET", Matcher::Regex(r"^/v2/core/wallpaper.*$".to_string()))
+                .match_query(Matcher::Regex("filter_res_operator_height=%3D".to_string()))
+                .with_status(200)
+                .with_header("content-type", "application/json")
+                .with_body(fs::read_to_string(
+                    "resources/get_wallpaper_success_fully_populated.json",
+                )?)
+                .create_async()
+                .await;
+
+            let client =
+                DigitalBlasphemyClient::new_test("api_key".to_string(), server.url().to_string())?;
+
+            client.get_wallpaper(&get_wallpaper_request).await.unwrap();
+
+            mock.assert_async().await;
+
+            Ok(())
+        }
+
+        #[tokio::test]
+        async fn get_wallpaper_does_send_filter_res_operator_width_if_not_provided()
+        -> Result<(), Box<dyn Error>> {
+            let mut server = mockito::Server::new_async().await;
+
+            let get_wallpaper_request = GetWallpaperRequest::builder().wallpaper_id(2).build();
+
+            let mock = server
+                .mock("GET", Matcher::Regex(r"^/v2/core/wallpaper.*$".to_string()))
+                .match_query(Matcher::Regex(
+                    "filter_res_operator_width=%3E%3D".to_string(),
+                ))
+                .with_status(200)
+                .with_header("content-type", "application/json")
+                .with_body(fs::read_to_string(
+                    "resources/get_wallpaper_success_fully_populated.json",
+                )?)
+                .create_async()
+                .await;
+
+            let client =
+                DigitalBlasphemyClient::new_test("api_key".to_string(), server.url().to_string())?;
+
+            client.get_wallpaper(&get_wallpaper_request).await.unwrap();
+
+            mock.assert_async().await;
+
+            Ok(())
+        }
+
+        #[tokio::test]
+        async fn get_wallpaper_does_send_filter_res_operator_width_if_provided()
+        -> Result<(), Box<dyn Error>> {
+            let mut server = mockito::Server::new_async().await;
+
+            let get_wallpaper_request = GetWallpaperRequest::builder()
+                .wallpaper_id(2)
+                .filter_res_operator_width(Operator::Equal)
+                .build();
+
+            let mock = server
+                .mock("GET", Matcher::Regex(r"^/v2/core/wallpaper.*$".to_string()))
+                .match_query(Matcher::Regex("filter_res_operator_width=%3D".to_string()))
+                .with_status(200)
+                .with_header("content-type", "application/json")
+                .with_body(fs::read_to_string(
+                    "resources/get_wallpaper_success_fully_populated.json",
+                )?)
+                .create_async()
+                .await;
+
+            let client =
+                DigitalBlasphemyClient::new_test("api_key".to_string(), server.url().to_string())?;
+
+            client.get_wallpaper(&get_wallpaper_request).await.unwrap();
+
+            mock.assert_async().await;
+
+            Ok(())
+        }
+
+        #[tokio::test]
+        async fn get_wallpaper_does_send_show_comments_if_not_provided()
+        -> Result<(), Box<dyn Error>> {
+            let mut server = mockito::Server::new_async().await;
+
+            let get_wallpaper_request = GetWallpaperRequest::builder().wallpaper_id(2).build();
+
+            let mock = server
+                .mock("GET", Matcher::Regex(r"^/v2/core/wallpaper.*$".to_string()))
+                .match_query(Matcher::Regex("show_comments=false".to_string()))
+                .with_status(200)
+                .with_header("content-type", "application/json")
+                .with_body(fs::read_to_string(
+                    "resources/get_wallpaper_success_fully_populated.json",
+                )?)
+                .create_async()
+                .await;
+
+            let client =
+                DigitalBlasphemyClient::new_test("api_key".to_string(), server.url().to_string())?;
+
+            client.get_wallpaper(&get_wallpaper_request).await.unwrap();
+
+            mock.assert_async().await;
+
+            Ok(())
+        }
+
+        #[tokio::test]
+        async fn get_wallpaper_does_send_show_comments_if_provided() -> Result<(), Box<dyn Error>> {
+            let mut server = mockito::Server::new_async().await;
+
+            let get_wallpaper_request = GetWallpaperRequest::builder()
+                .wallpaper_id(2)
+                .show_comments(true)
+                .build();
+
+            let mock = server
+                .mock("GET", Matcher::Regex(r"^/v2/core/wallpaper.*$".to_string()))
+                .match_query(Matcher::Regex("show_comments=true".to_string()))
+                .with_status(200)
+                .with_header("content-type", "application/json")
+                .with_body(fs::read_to_string(
+                    "resources/get_wallpaper_success_fully_populated.json",
+                )?)
+                .create_async()
+                .await;
+
+            let client =
+                DigitalBlasphemyClient::new_test("api_key".to_string(), server.url().to_string())?;
+
+            client.get_wallpaper(&get_wallpaper_request).await.unwrap();
+
+            mock.assert_async().await;
+
+            Ok(())
+        }
+
+        #[tokio::test]
+        async fn get_wallpaper_does_send_show_pickle_jar_if_not_provided()
+        -> Result<(), Box<dyn Error>> {
+            let mut server = mockito::Server::new_async().await;
+
+            let get_wallpaper_request = GetWallpaperRequest::builder().wallpaper_id(2).build();
+
+            let mock = server
+                .mock("GET", Matcher::Regex(r"^/v2/core/wallpaper.*$".to_string()))
+                .match_query(Matcher::Regex("show_pickle_jar=false".to_string()))
+                .with_status(200)
+                .with_header("content-type", "application/json")
+                .with_body(fs::read_to_string(
+                    "resources/get_wallpaper_success_fully_populated.json",
+                )?)
+                .create_async()
+                .await;
+
+            let client =
+                DigitalBlasphemyClient::new_test("api_key".to_string(), server.url().to_string())?;
+
+            client.get_wallpaper(&get_wallpaper_request).await.unwrap();
+
+            mock.assert_async().await;
+
+            Ok(())
+        }
+
+        #[tokio::test]
+        async fn get_wallpaper_does_send_show_pickle_jar_if_provided() -> Result<(), Box<dyn Error>>
+        {
+            let mut server = mockito::Server::new_async().await;
+
+            let get_wallpaper_request = GetWallpaperRequest::builder()
+                .wallpaper_id(2)
+                .show_pickle_jar(true)
+                .build();
+
+            let mock = server
+                .mock("GET", Matcher::Regex(r"^/v2/core/wallpaper.*$".to_string()))
+                .match_query(Matcher::Regex("show_pickle_jar=true".to_string()))
+                .with_status(200)
+                .with_header("content-type", "application/json")
+                .with_body(fs::read_to_string(
+                    "resources/get_wallpaper_success_fully_populated.json",
+                )?)
+                .create_async()
+                .await;
+
+            let client =
+                DigitalBlasphemyClient::new_test("api_key".to_string(), server.url().to_string())?;
+
+            client.get_wallpaper(&get_wallpaper_request).await.unwrap();
+
+            mock.assert_async().await;
+
+            Ok(())
+        }
+
+        #[tokio::test]
+        async fn get_wallpaper_does_send_show_resolutions_if_not_provided()
+        -> Result<(), Box<dyn Error>> {
+            let mut server = mockito::Server::new_async().await;
+
+            let get_wallpaper_request = GetWallpaperRequest::builder().wallpaper_id(2).build();
+
+            let mock = server
+                .mock("GET", Matcher::Regex(r"^/v2/core/wallpaper.*$".to_string()))
+                .match_query(Matcher::Regex("show_resolutions=true".to_string()))
+                .with_status(200)
+                .with_header("content-type", "application/json")
+                .with_body(fs::read_to_string(
+                    "resources/get_wallpaper_success_fully_populated.json",
+                )?)
+                .create_async()
+                .await;
+
+            let client =
+                DigitalBlasphemyClient::new_test("api_key".to_string(), server.url().to_string())?;
+
+            client.get_wallpaper(&get_wallpaper_request).await.unwrap();
+
+            mock.assert_async().await;
+
+            Ok(())
+        }
+
+        #[tokio::test]
+        async fn get_wallpaper_does_send_show_resolutions_if_provided() -> Result<(), Box<dyn Error>>
+        {
+            let mut server = mockito::Server::new_async().await;
+
+            let get_wallpaper_request = GetWallpaperRequest::builder()
+                .wallpaper_id(2)
+                .show_resolutions(false)
+                .build();
+
+            let mock = server
+                .mock("GET", Matcher::Regex(r"^/v2/core/wallpaper.*$".to_string()))
+                .match_query(Matcher::Regex("show_resolutions=false".to_string()))
+                .with_status(200)
+                .with_header("content-type", "application/json")
+                .with_body(fs::read_to_string(
+                    "resources/get_wallpaper_success_fully_populated.json",
+                )?)
+                .create_async()
+                .await;
+
+            let client =
+                DigitalBlasphemyClient::new_test("api_key".to_string(), server.url().to_string())?;
+
+            client.get_wallpaper(&get_wallpaper_request).await.unwrap();
+
+            mock.assert_async().await;
+
+            Ok(())
+        }
+
+        #[tokio::test]
+        async fn get_wallpaper_can_map_successful_response_fully_populated()
+        -> Result<(), Box<dyn Error>> {
+            let mut server = mockito::Server::new_async().await;
+
+            let get_wallpaper_request = GetWallpaperRequest::builder().wallpaper_id(2).build();
+
+            let mock = server
+                .mock("GET", Matcher::Regex(r"^/v2/core/wallpaper.*$".to_string()))
+                .with_status(200)
+                .with_header("content-type", "application/json")
+                .with_body(fs::read_to_string(
+                    "resources/get_wallpaper_success_fully_populated.json",
+                )?)
+                .create_async()
+                .await;
+
+            let client =
+                DigitalBlasphemyClient::new_test("api_key".to_string(), server.url().to_string())?;
+
+            let get_wallpaper_response = client
+                .get_wallpaper(&get_wallpaper_request)
+                .await
+                .unwrap()
+                .unwrap();
+
+            let expected_wallpaper = Wallpaper {
+                id: 2,
+                all_free: Some(true),
+                comments: Some(Comments {
+                    comments: vec![
+                        Comment {
+                            id: "5".to_string(),
+                            author_id: "author ID 1".to_string(),
+                            author_display: "author display 1".to_string(),
+                            content: "Content 1".to_string(),
+                            rating: "6".to_string(),
+                            timestamp: 7,
+                        },
+                        Comment {
+                            id: "8".to_string(),
+                            author_id: "author ID 2".to_string(),
+                            author_display: "author display 2".to_string(),
+                            content: "Content 2".to_string(),
+                            rating: "9".to_string(),
+                            timestamp: 10,
+                        },
+                    ],
+                }),
+                content: Some("Content 3".to_string()),
+                free: Some(true),
+                name: "Vulcan".to_string(),
+                paths: Paths {
+                    api: "/wallpaper/2".to_string(),
+                    thumb: "/thumbnail/12x13/vulcan_thumbnail_12x13.jpg".to_string(),
+                    web: "/sec/vulcan/".to_string(),
                 },
-                request: GetWallpapersDBCoreRequest {
-                    query: GetWallpapersResponseQuery {
-                        filter_date_day: None,
-                        filter_date_month: None,
-                        filter_date_year: None,
-                        filter_date_operator: Operator::Equal,
-                        filter_gallery: None,
-                        filter_rating: None,
-                        filter_rating_operator: None,
-                        filter_res_operator_height: None,
-                        filter_res_operator_width: None,
-                        filter_res_height: 2,
-                        filter_res_operator: Operator::GreaterThanOrEqual,
-                        filter_res_width: 3,
-                        filter_tag: None,
-                        limit: 4,
-                        order: Order::Ascending,
-                        order_by: GetWallpapersOrderBy::Name,
-                        page: 5,
-                        s: None,
-                        show_comments: false,
-                        show_pickle_jar: false,
-                        show_resolutions: false,
-                    },
-                },
-                total_pages: 6,
-                wallpapers: HashMap::from([
-                    ("7".to_string(), expected_wallpaper_7),
-                    ("13".to_string(), expected_wallpaper_13),
-                ]),
-            },
-        };
-        assert_eq!(get_wallpapers_response, expected_get_wallpapers_response);
+                pickle_jar: Some(PickleJar {
+                    parent: "parent 1".to_string(),
+                    siblings: vec!["sibling 1".to_string(), "sibling 2".to_string()],
+                }),
+                rating: Some("11".to_string()),
+                resolutions: Some(Resolutions {
+                    single: vec![
+                        Resolution {
+                            label: "12x13".to_string(),
+                            width: "12".to_string(),
+                            height: "13".to_string(),
+                            image: "/single/12x13/vulcan_single_12x13.jpg".to_string(),
+                        },
+                        Resolution {
+                            label: "14x15".to_string(),
+                            width: "14".to_string(),
+                            height: "15".to_string(),
+                            image: "/single/14x15/vulcan_single_14x15.jpg".to_string(),
+                        },
+                    ],
+                    dual: Some(vec![
+                        Resolution {
+                            label: "16x17".to_string(),
+                            width: "16".to_string(),
+                            height: "17".to_string(),
+                            image: "/dual/16x17/vulcan_dual_16x17.jpg".to_string(),
+                        },
+                        Resolution {
+                            label: "18x19".to_string(),
+                            width: "18".to_string(),
+                            height: "19".to_string(),
+                            image: "/dual/18x19/vulcan_dual_18x19.jpg".to_string(),
+                        },
+                    ]),
+                    triple: Some(vec![
+                        Resolution {
+                            label: "20x21".to_string(),
+                            width: "20".to_string(),
+                            height: "21".to_string(),
+                            image: "/triple/20x21/vulcan_triple_20x21.jpg".to_string(),
+                        },
+                        Resolution {
+                            label: "22x23".to_string(),
+                            width: "22".to_string(),
+                            height: "23".to_string(),
+                            image: "/triple/22x23/vulcan_triple_22x23.jpg".to_string(),
+                        },
+                    ]),
+                    mobile: Some(vec![
+                        Resolution {
+                            label: "24x25".to_string(),
+                            width: "24".to_string(),
+                            height: "25".to_string(),
+                            image: "/mobile/24x25/vulcan_mobile_24x25.jpg".to_string(),
+                        },
+                        Resolution {
+                            label: "26x27".to_string(),
+                            width: "26".to_string(),
+                            height: "27".to_string(),
+                            image: "/mobile/26x27/vulcan_mobile_26x27.jpg".to_string(),
+                        },
+                    ]),
+                }),
+                sku: Some("vulcan".to_string()),
+                tags: Some(HashMap::from([
+                    (
+                        "28".to_string(),
+                        Tag {
+                            id: 28,
+                            name: "Tag 1".to_string(),
+                        },
+                    ),
+                    (
+                        "29".to_string(),
+                        Tag {
+                            id: 29,
+                            name: "Tag 2".to_string(),
+                        },
+                    ),
+                ])),
+                timestamp: Some(30),
+            };
+            assert_eq!(get_wallpaper_response, expected_wallpaper);
 
-        mock.assert_async().await;
+            mock.assert_async().await;
 
-        Ok(())
+            Ok(())
+        }
+
+        #[tokio::test]
+        async fn get_wallpaper_can_map_successful_response_minimal_populated()
+        -> Result<(), Box<dyn Error>> {
+            let mut server = mockito::Server::new_async().await;
+
+            let get_wallpaper_request = GetWallpaperRequest::builder().wallpaper_id(2).build();
+
+            let mock = server
+                .mock("GET", Matcher::Regex(r"^/v2/core/wallpaper.*$".to_string()))
+                .with_status(200)
+                .with_header("content-type", "application/json")
+                .with_body(fs::read_to_string(
+                    "resources/get_wallpaper_success_minimal_populated.json",
+                )?)
+                .create_async()
+                .await;
+
+            let client =
+                DigitalBlasphemyClient::new_test("api_key".to_string(), server.url().to_string())?;
+
+            let get_wallpaper_response =
+                client.get_wallpaper(&get_wallpaper_request).await.unwrap();
+
+            assert_eq!(get_wallpaper_response, None);
+
+            mock.assert_async().await;
+
+            Ok(())
+        }
     }
 }

@@ -1,0 +1,24 @@
+{
+  "db_core": {
+    "timestamp": 1,
+    "endpoints": {
+      "api": "https://api.digitalblasphemy.com/v2/core",
+      "image": "https://arcadia.digitalblasphemy.com",
+      "thumb": "https://cdn.digitalblasphemy.com",
+      "web": "https://digitalblasphemy.com"
+    },
+    "request": {
+      "params": {
+        "wallpaper_id": 2
+      },
+      "query": {
+        "filter_res_height": 3,
+        "filter_res_operator": ">=",
+        "filter_res_width": 4,
+        "show_comments": true,
+        "show_pickle_jar": true,
+        "show_resolutions": true
+      }
+    }
+  }
+}
