@@ -7,7 +7,7 @@ pub use crate::model::{
     GetWallpaperResponse, GetWallpapersOrderBy, GetWallpapersRequest, GetWallpapersResponse,
     Wallpaper,
 };
-use log::{Level, debug, log_enabled};
+use log::{debug, log_enabled, Level};
 use reqwest::{RequestBuilder, Response, StatusCode};
 use std::error::Error;
 use std::fs::OpenOptions;
@@ -175,7 +175,7 @@ impl DigitalBlasphemyClient {
 
     pub async fn download_wallpaper(
         &self,
-        filename: impl AsRef<Path>,
+        filename: &impl AsRef<Path>,
         request: &DownloadWallpaperRequest,
     ) -> Result<(), ErrorResponse> {
         let download_wallpaper_response = self
@@ -303,6 +303,9 @@ mod tests {
     use std::collections::HashMap;
     use std::fs;
 
+    // TODO: Need to test for path parameters
+    // TODO: Need to test for error response
+
     mod get_user_information {
         use super::*;
 
@@ -320,8 +323,7 @@ mod tests {
                 .create_async()
                 .await;
 
-            let client =
-                DigitalBlasphemyClient::new_test("api_key".to_string(), server.url().to_string())?;
+            let client = DigitalBlasphemyClient::new_test("api_key".to_string(), server.url())?;
 
             let user_information = client.get_user_information().await.unwrap();
 
@@ -349,8 +351,7 @@ mod tests {
                 .create_async()
                 .await;
 
-            let client =
-                DigitalBlasphemyClient::new_test("api_key".to_string(), server.url().to_string())?;
+            let client = DigitalBlasphemyClient::new_test("api_key".to_string(), server.url())?;
 
             let error = client.get_user_information().await.unwrap_err();
 
@@ -387,8 +388,7 @@ mod tests {
                 .create_async()
                 .await;
 
-            let client =
-                DigitalBlasphemyClient::new_test("api_key".to_string(), server.url().to_string())?;
+            let client = DigitalBlasphemyClient::new_test("api_key".to_string(), server.url())?;
 
             client
                 .get_wallpapers(&get_wallpapers_request)
@@ -421,8 +421,7 @@ mod tests {
                 .create_async()
                 .await;
 
-            let client =
-                DigitalBlasphemyClient::new_test("api_key".to_string(), server.url().to_string())?;
+            let client = DigitalBlasphemyClient::new_test("api_key".to_string(), server.url())?;
 
             client
                 .get_wallpapers(&get_wallpapers_request)
@@ -455,8 +454,7 @@ mod tests {
                 .create_async()
                 .await;
 
-            let client =
-                DigitalBlasphemyClient::new_test("api_key".to_string(), server.url().to_string())?;
+            let client = DigitalBlasphemyClient::new_test("api_key".to_string(), server.url())?;
 
             client
                 .get_wallpapers(&get_wallpapers_request)
@@ -490,8 +488,7 @@ mod tests {
                 .create_async()
                 .await;
 
-            let client =
-                DigitalBlasphemyClient::new_test("api_key".to_string(), server.url().to_string())?;
+            let client = DigitalBlasphemyClient::new_test("api_key".to_string(), server.url())?;
 
             client
                 .get_wallpapers(&get_wallpapers_request)
@@ -524,8 +521,7 @@ mod tests {
                 .create_async()
                 .await;
 
-            let client =
-                DigitalBlasphemyClient::new_test("api_key".to_string(), server.url().to_string())?;
+            let client = DigitalBlasphemyClient::new_test("api_key".to_string(), server.url())?;
 
             client
                 .get_wallpapers(&get_wallpapers_request)
@@ -560,8 +556,7 @@ mod tests {
                 .create_async()
                 .await;
 
-            let client =
-                DigitalBlasphemyClient::new_test("api_key".to_string(), server.url().to_string())?;
+            let client = DigitalBlasphemyClient::new_test("api_key".to_string(), server.url())?;
 
             client
                 .get_wallpapers(&get_wallpapers_request)
@@ -594,8 +589,7 @@ mod tests {
                 .create_async()
                 .await;
 
-            let client =
-                DigitalBlasphemyClient::new_test("api_key".to_string(), server.url().to_string())?;
+            let client = DigitalBlasphemyClient::new_test("api_key".to_string(), server.url())?;
 
             client
                 .get_wallpapers(&get_wallpapers_request)
@@ -630,8 +624,7 @@ mod tests {
                 .create_async()
                 .await;
 
-            let client =
-                DigitalBlasphemyClient::new_test("api_key".to_string(), server.url().to_string())?;
+            let client = DigitalBlasphemyClient::new_test("api_key".to_string(), server.url())?;
 
             client
                 .get_wallpapers(&get_wallpapers_request)
@@ -664,8 +657,7 @@ mod tests {
                 .create_async()
                 .await;
 
-            let client =
-                DigitalBlasphemyClient::new_test("api_key".to_string(), server.url().to_string())?;
+            let client = DigitalBlasphemyClient::new_test("api_key".to_string(), server.url())?;
 
             client
                 .get_wallpapers(&get_wallpapers_request)
@@ -702,8 +694,7 @@ mod tests {
                 .create_async()
                 .await;
 
-            let client =
-                DigitalBlasphemyClient::new_test("api_key".to_string(), server.url().to_string())?;
+            let client = DigitalBlasphemyClient::new_test("api_key".to_string(), server.url())?;
 
             client
                 .get_wallpapers(&get_wallpapers_request)
@@ -736,8 +727,7 @@ mod tests {
                 .create_async()
                 .await;
 
-            let client =
-                DigitalBlasphemyClient::new_test("api_key".to_string(), server.url().to_string())?;
+            let client = DigitalBlasphemyClient::new_test("api_key".to_string(), server.url())?;
 
             client
                 .get_wallpapers(&get_wallpapers_request)
@@ -770,8 +760,7 @@ mod tests {
                 .create_async()
                 .await;
 
-            let client =
-                DigitalBlasphemyClient::new_test("api_key".to_string(), server.url().to_string())?;
+            let client = DigitalBlasphemyClient::new_test("api_key".to_string(), server.url())?;
 
             client
                 .get_wallpapers(&get_wallpapers_request)
@@ -804,8 +793,7 @@ mod tests {
                 .create_async()
                 .await;
 
-            let client =
-                DigitalBlasphemyClient::new_test("api_key".to_string(), server.url().to_string())?;
+            let client = DigitalBlasphemyClient::new_test("api_key".to_string(), server.url())?;
 
             client
                 .get_wallpapers(&get_wallpapers_request)
@@ -840,8 +828,7 @@ mod tests {
                 .create_async()
                 .await;
 
-            let client =
-                DigitalBlasphemyClient::new_test("api_key".to_string(), server.url().to_string())?;
+            let client = DigitalBlasphemyClient::new_test("api_key".to_string(), server.url())?;
 
             client
                 .get_wallpapers(&get_wallpapers_request)
@@ -874,8 +861,7 @@ mod tests {
                 .create_async()
                 .await;
 
-            let client =
-                DigitalBlasphemyClient::new_test("api_key".to_string(), server.url().to_string())?;
+            let client = DigitalBlasphemyClient::new_test("api_key".to_string(), server.url())?;
 
             client
                 .get_wallpapers(&get_wallpapers_request)
@@ -909,8 +895,7 @@ mod tests {
                 .create_async()
                 .await;
 
-            let client =
-                DigitalBlasphemyClient::new_test("api_key".to_string(), server.url().to_string())?;
+            let client = DigitalBlasphemyClient::new_test("api_key".to_string(), server.url())?;
 
             client
                 .get_wallpapers(&get_wallpapers_request)
@@ -943,8 +928,7 @@ mod tests {
                 .create_async()
                 .await;
 
-            let client =
-                DigitalBlasphemyClient::new_test("api_key".to_string(), server.url().to_string())?;
+            let client = DigitalBlasphemyClient::new_test("api_key".to_string(), server.url())?;
 
             client
                 .get_wallpapers(&get_wallpapers_request)
@@ -979,8 +963,7 @@ mod tests {
                 .create_async()
                 .await;
 
-            let client =
-                DigitalBlasphemyClient::new_test("api_key".to_string(), server.url().to_string())?;
+            let client = DigitalBlasphemyClient::new_test("api_key".to_string(), server.url())?;
 
             client
                 .get_wallpapers(&get_wallpapers_request)
@@ -1015,8 +998,7 @@ mod tests {
                 .create_async()
                 .await;
 
-            let client =
-                DigitalBlasphemyClient::new_test("api_key".to_string(), server.url().to_string())?;
+            let client = DigitalBlasphemyClient::new_test("api_key".to_string(), server.url())?;
 
             client
                 .get_wallpapers(&get_wallpapers_request)
@@ -1051,8 +1033,7 @@ mod tests {
                 .create_async()
                 .await;
 
-            let client =
-                DigitalBlasphemyClient::new_test("api_key".to_string(), server.url().to_string())?;
+            let client = DigitalBlasphemyClient::new_test("api_key".to_string(), server.url())?;
 
             client
                 .get_wallpapers(&get_wallpapers_request)
@@ -1087,8 +1068,7 @@ mod tests {
                 .create_async()
                 .await;
 
-            let client =
-                DigitalBlasphemyClient::new_test("api_key".to_string(), server.url().to_string())?;
+            let client = DigitalBlasphemyClient::new_test("api_key".to_string(), server.url())?;
 
             client
                 .get_wallpapers(&get_wallpapers_request)
@@ -1123,8 +1103,7 @@ mod tests {
                 .create_async()
                 .await;
 
-            let client =
-                DigitalBlasphemyClient::new_test("api_key".to_string(), server.url().to_string())?;
+            let client = DigitalBlasphemyClient::new_test("api_key".to_string(), server.url())?;
 
             client
                 .get_wallpapers(&get_wallpapers_request)
@@ -1157,8 +1136,7 @@ mod tests {
                 .create_async()
                 .await;
 
-            let client =
-                DigitalBlasphemyClient::new_test("api_key".to_string(), server.url().to_string())?;
+            let client = DigitalBlasphemyClient::new_test("api_key".to_string(), server.url())?;
 
             client
                 .get_wallpapers(&get_wallpapers_request)
@@ -1192,8 +1170,7 @@ mod tests {
                 .create_async()
                 .await;
 
-            let client =
-                DigitalBlasphemyClient::new_test("api_key".to_string(), server.url().to_string())?;
+            let client = DigitalBlasphemyClient::new_test("api_key".to_string(), server.url())?;
 
             client
                 .get_wallpapers(&get_wallpapers_request)
@@ -1226,8 +1203,7 @@ mod tests {
                 .create_async()
                 .await;
 
-            let client =
-                DigitalBlasphemyClient::new_test("api_key".to_string(), server.url().to_string())?;
+            let client = DigitalBlasphemyClient::new_test("api_key".to_string(), server.url())?;
 
             client
                 .get_wallpapers(&get_wallpapers_request)
@@ -1261,8 +1237,7 @@ mod tests {
                 .create_async()
                 .await;
 
-            let client =
-                DigitalBlasphemyClient::new_test("api_key".to_string(), server.url().to_string())?;
+            let client = DigitalBlasphemyClient::new_test("api_key".to_string(), server.url())?;
 
             client
                 .get_wallpapers(&get_wallpapers_request)
@@ -1294,8 +1269,7 @@ mod tests {
                 .create_async()
                 .await;
 
-            let client =
-                DigitalBlasphemyClient::new_test("api_key".to_string(), server.url().to_string())?;
+            let client = DigitalBlasphemyClient::new_test("api_key".to_string(), server.url())?;
 
             client
                 .get_wallpapers(&get_wallpapers_request)
@@ -1327,8 +1301,7 @@ mod tests {
                 .create_async()
                 .await;
 
-            let client =
-                DigitalBlasphemyClient::new_test("api_key".to_string(), server.url().to_string())?;
+            let client = DigitalBlasphemyClient::new_test("api_key".to_string(), server.url())?;
 
             client
                 .get_wallpapers(&get_wallpapers_request)
@@ -1360,8 +1333,7 @@ mod tests {
                 .create_async()
                 .await;
 
-            let client =
-                DigitalBlasphemyClient::new_test("api_key".to_string(), server.url().to_string())?;
+            let client = DigitalBlasphemyClient::new_test("api_key".to_string(), server.url())?;
 
             client
                 .get_wallpapers(&get_wallpapers_request)
@@ -1395,8 +1367,7 @@ mod tests {
                 .create_async()
                 .await;
 
-            let client =
-                DigitalBlasphemyClient::new_test("api_key".to_string(), server.url().to_string())?;
+            let client = DigitalBlasphemyClient::new_test("api_key".to_string(), server.url())?;
 
             client
                 .get_wallpapers(&get_wallpapers_request)
@@ -1430,8 +1401,7 @@ mod tests {
                 .create_async()
                 .await;
 
-            let client =
-                DigitalBlasphemyClient::new_test("api_key".to_string(), server.url().to_string())?;
+            let client = DigitalBlasphemyClient::new_test("api_key".to_string(), server.url())?;
 
             client
                 .get_wallpapers(&get_wallpapers_request)
@@ -1465,8 +1435,7 @@ mod tests {
                 .create_async()
                 .await;
 
-            let client =
-                DigitalBlasphemyClient::new_test("api_key".to_string(), server.url().to_string())?;
+            let client = DigitalBlasphemyClient::new_test("api_key".to_string(), server.url())?;
 
             client
                 .get_wallpapers(&get_wallpapers_request)
@@ -1498,8 +1467,7 @@ mod tests {
                 .create_async()
                 .await;
 
-            let client =
-                DigitalBlasphemyClient::new_test("api_key".to_string(), server.url().to_string())?;
+            let client = DigitalBlasphemyClient::new_test("api_key".to_string(), server.url())?;
 
             client
                 .get_wallpapers(&get_wallpapers_request)
@@ -1531,8 +1499,7 @@ mod tests {
                 .create_async()
                 .await;
 
-            let client =
-                DigitalBlasphemyClient::new_test("api_key".to_string(), server.url().to_string())?;
+            let client = DigitalBlasphemyClient::new_test("api_key".to_string(), server.url())?;
 
             client
                 .get_wallpapers(&get_wallpapers_request)
@@ -1564,8 +1531,7 @@ mod tests {
                 .create_async()
                 .await;
 
-            let client =
-                DigitalBlasphemyClient::new_test("api_key".to_string(), server.url().to_string())?;
+            let client = DigitalBlasphemyClient::new_test("api_key".to_string(), server.url())?;
 
             client
                 .get_wallpapers(&get_wallpapers_request)
@@ -1599,8 +1565,7 @@ mod tests {
                 .create_async()
                 .await;
 
-            let client =
-                DigitalBlasphemyClient::new_test("api_key".to_string(), server.url().to_string())?;
+            let client = DigitalBlasphemyClient::new_test("api_key".to_string(), server.url())?;
 
             client
                 .get_wallpapers(&get_wallpapers_request)
@@ -1633,8 +1598,7 @@ mod tests {
                 .create_async()
                 .await;
 
-            let client =
-                DigitalBlasphemyClient::new_test("api_key".to_string(), server.url().to_string())?;
+            let client = DigitalBlasphemyClient::new_test("api_key".to_string(), server.url())?;
 
             client
                 .get_wallpapers(&get_wallpapers_request)
@@ -1668,8 +1632,7 @@ mod tests {
                 .create_async()
                 .await;
 
-            let client =
-                DigitalBlasphemyClient::new_test("api_key".to_string(), server.url().to_string())?;
+            let client = DigitalBlasphemyClient::new_test("api_key".to_string(), server.url())?;
 
             client
                 .get_wallpapers(&get_wallpapers_request)
@@ -1702,8 +1665,7 @@ mod tests {
                 .create_async()
                 .await;
 
-            let client =
-                DigitalBlasphemyClient::new_test("api_key".to_string(), server.url().to_string())?;
+            let client = DigitalBlasphemyClient::new_test("api_key".to_string(), server.url())?;
 
             client
                 .get_wallpapers(&get_wallpapers_request)
@@ -1738,8 +1700,7 @@ mod tests {
                 .create_async()
                 .await;
 
-            let client =
-                DigitalBlasphemyClient::new_test("api_key".to_string(), server.url().to_string())?;
+            let client = DigitalBlasphemyClient::new_test("api_key".to_string(), server.url())?;
 
             client
                 .get_wallpapers(&get_wallpapers_request)
@@ -1772,8 +1733,7 @@ mod tests {
                 .create_async()
                 .await;
 
-            let client =
-                DigitalBlasphemyClient::new_test("api_key".to_string(), server.url().to_string())?;
+            let client = DigitalBlasphemyClient::new_test("api_key".to_string(), server.url())?;
 
             client
                 .get_wallpapers(&get_wallpapers_request)
@@ -1808,8 +1768,7 @@ mod tests {
                 .create_async()
                 .await;
 
-            let client =
-                DigitalBlasphemyClient::new_test("api_key".to_string(), server.url().to_string())?;
+            let client = DigitalBlasphemyClient::new_test("api_key".to_string(), server.url())?;
 
             client
                 .get_wallpapers(&get_wallpapers_request)
@@ -1840,8 +1799,7 @@ mod tests {
                 .create_async()
                 .await;
 
-            let client =
-                DigitalBlasphemyClient::new_test("api_key".to_string(), server.url().to_string())?;
+            let client = DigitalBlasphemyClient::new_test("api_key".to_string(), server.url())?;
 
             let get_wallpapers_response = client
                 .get_wallpapers(&get_wallpapers_request)
@@ -2142,8 +2100,7 @@ mod tests {
                 .create_async()
                 .await;
 
-            let client =
-                DigitalBlasphemyClient::new_test("api_key".to_string(), server.url().to_string())?;
+            let client = DigitalBlasphemyClient::new_test("api_key".to_string(), server.url())?;
 
             let get_wallpapers_response = client
                 .get_wallpapers(&get_wallpapers_request)
@@ -2294,8 +2251,7 @@ mod tests {
                 .create_async()
                 .await;
 
-            let client =
-                DigitalBlasphemyClient::new_test("api_key".to_string(), server.url().to_string())?;
+            let client = DigitalBlasphemyClient::new_test("api_key".to_string(), server.url())?;
 
             client.get_wallpaper(&get_wallpaper_request).await.unwrap();
 
@@ -2325,8 +2281,7 @@ mod tests {
                 .create_async()
                 .await;
 
-            let client =
-                DigitalBlasphemyClient::new_test("api_key".to_string(), server.url().to_string())?;
+            let client = DigitalBlasphemyClient::new_test("api_key".to_string(), server.url())?;
 
             client.get_wallpaper(&get_wallpaper_request).await.unwrap();
 
@@ -2353,8 +2308,7 @@ mod tests {
                 .create_async()
                 .await;
 
-            let client =
-                DigitalBlasphemyClient::new_test("api_key".to_string(), server.url().to_string())?;
+            let client = DigitalBlasphemyClient::new_test("api_key".to_string(), server.url())?;
 
             client.get_wallpaper(&get_wallpaper_request).await.unwrap();
 
@@ -2384,8 +2338,7 @@ mod tests {
                 .create_async()
                 .await;
 
-            let client =
-                DigitalBlasphemyClient::new_test("api_key".to_string(), server.url().to_string())?;
+            let client = DigitalBlasphemyClient::new_test("api_key".to_string(), server.url())?;
 
             client.get_wallpaper(&get_wallpaper_request).await.unwrap();
 
@@ -2412,8 +2365,7 @@ mod tests {
                 .create_async()
                 .await;
 
-            let client =
-                DigitalBlasphemyClient::new_test("api_key".to_string(), server.url().to_string())?;
+            let client = DigitalBlasphemyClient::new_test("api_key".to_string(), server.url())?;
 
             client.get_wallpaper(&get_wallpaper_request).await.unwrap();
 
@@ -2443,8 +2395,7 @@ mod tests {
                 .create_async()
                 .await;
 
-            let client =
-                DigitalBlasphemyClient::new_test("api_key".to_string(), server.url().to_string())?;
+            let client = DigitalBlasphemyClient::new_test("api_key".to_string(), server.url())?;
 
             client.get_wallpaper(&get_wallpaper_request).await.unwrap();
 
@@ -2473,8 +2424,7 @@ mod tests {
                 .create_async()
                 .await;
 
-            let client =
-                DigitalBlasphemyClient::new_test("api_key".to_string(), server.url().to_string())?;
+            let client = DigitalBlasphemyClient::new_test("api_key".to_string(), server.url())?;
 
             client.get_wallpaper(&get_wallpaper_request).await.unwrap();
 
@@ -2504,8 +2454,7 @@ mod tests {
                 .create_async()
                 .await;
 
-            let client =
-                DigitalBlasphemyClient::new_test("api_key".to_string(), server.url().to_string())?;
+            let client = DigitalBlasphemyClient::new_test("api_key".to_string(), server.url())?;
 
             client.get_wallpaper(&get_wallpaper_request).await.unwrap();
 
@@ -2534,8 +2483,7 @@ mod tests {
                 .create_async()
                 .await;
 
-            let client =
-                DigitalBlasphemyClient::new_test("api_key".to_string(), server.url().to_string())?;
+            let client = DigitalBlasphemyClient::new_test("api_key".to_string(), server.url())?;
 
             client.get_wallpaper(&get_wallpaper_request).await.unwrap();
 
@@ -2565,8 +2513,7 @@ mod tests {
                 .create_async()
                 .await;
 
-            let client =
-                DigitalBlasphemyClient::new_test("api_key".to_string(), server.url().to_string())?;
+            let client = DigitalBlasphemyClient::new_test("api_key".to_string(), server.url())?;
 
             client.get_wallpaper(&get_wallpaper_request).await.unwrap();
 
@@ -2593,8 +2540,7 @@ mod tests {
                 .create_async()
                 .await;
 
-            let client =
-                DigitalBlasphemyClient::new_test("api_key".to_string(), server.url().to_string())?;
+            let client = DigitalBlasphemyClient::new_test("api_key".to_string(), server.url())?;
 
             client.get_wallpaper(&get_wallpaper_request).await.unwrap();
 
@@ -2623,8 +2569,7 @@ mod tests {
                 .create_async()
                 .await;
 
-            let client =
-                DigitalBlasphemyClient::new_test("api_key".to_string(), server.url().to_string())?;
+            let client = DigitalBlasphemyClient::new_test("api_key".to_string(), server.url())?;
 
             client.get_wallpaper(&get_wallpaper_request).await.unwrap();
 
@@ -2651,8 +2596,7 @@ mod tests {
                 .create_async()
                 .await;
 
-            let client =
-                DigitalBlasphemyClient::new_test("api_key".to_string(), server.url().to_string())?;
+            let client = DigitalBlasphemyClient::new_test("api_key".to_string(), server.url())?;
 
             client.get_wallpaper(&get_wallpaper_request).await.unwrap();
 
@@ -2682,8 +2626,7 @@ mod tests {
                 .create_async()
                 .await;
 
-            let client =
-                DigitalBlasphemyClient::new_test("api_key".to_string(), server.url().to_string())?;
+            let client = DigitalBlasphemyClient::new_test("api_key".to_string(), server.url())?;
 
             client.get_wallpaper(&get_wallpaper_request).await.unwrap();
 
@@ -2710,8 +2653,7 @@ mod tests {
                 .create_async()
                 .await;
 
-            let client =
-                DigitalBlasphemyClient::new_test("api_key".to_string(), server.url().to_string())?;
+            let client = DigitalBlasphemyClient::new_test("api_key".to_string(), server.url())?;
 
             client.get_wallpaper(&get_wallpaper_request).await.unwrap();
 
@@ -2741,8 +2683,7 @@ mod tests {
                 .create_async()
                 .await;
 
-            let client =
-                DigitalBlasphemyClient::new_test("api_key".to_string(), server.url().to_string())?;
+            let client = DigitalBlasphemyClient::new_test("api_key".to_string(), server.url())?;
 
             client.get_wallpaper(&get_wallpaper_request).await.unwrap();
 
@@ -2768,8 +2709,7 @@ mod tests {
                 .create_async()
                 .await;
 
-            let client =
-                DigitalBlasphemyClient::new_test("api_key".to_string(), server.url().to_string())?;
+            let client = DigitalBlasphemyClient::new_test("api_key".to_string(), server.url())?;
 
             let get_wallpaper_response = client
                 .get_wallpaper(&get_wallpaper_request)
@@ -2914,8 +2854,7 @@ mod tests {
                 .create_async()
                 .await;
 
-            let client =
-                DigitalBlasphemyClient::new_test("api_key".to_string(), server.url().to_string())?;
+            let client = DigitalBlasphemyClient::new_test("api_key".to_string(), server.url())?;
 
             let get_wallpaper_response =
                 client.get_wallpaper(&get_wallpaper_request).await.unwrap();
@@ -2923,6 +2862,249 @@ mod tests {
             assert_eq!(get_wallpaper_response, None);
 
             mock.assert_async().await;
+
+            Ok(())
+        }
+    }
+
+    mod download_wallpaper {
+        use std::time::SystemTime;
+
+        use super::*;
+
+        #[tokio::test]
+        async fn download_wallpaper_does_send_show_watermark_if_not_provided()
+        -> Result<(), Box<dyn Error>> {
+            let mut server = mockito::Server::new_async().await;
+
+            let download_wallpaper_request = DownloadWallpaperRequest::builder()
+                .width(2)
+                .height(3)
+                .wallpaper_id(4)
+                .build();
+
+            let download_wallpaper_mock = server
+                .mock(
+                    "GET",
+                    Matcher::Regex(r"^/v2/core/download/wallpaper.*$".to_string()),
+                )
+                .match_query(Matcher::Regex("show_watermark=true".to_string()))
+                .with_status(200)
+                .with_header("content-type", "application/json")
+                .with_body(
+                    fs::read_to_string(
+                        "resources/download_wallpaper_success_fully_populated.json",
+                    )?
+                    .replace("{{host}}", &server.url()),
+                )
+                .create_async()
+                .await;
+
+            let download_file_mock = server
+                .mock("GET", Matcher::Regex(r"^/test.jpg$".to_string()))
+                .with_status(200)
+                .with_header("content-type", "image/jpg")
+                .with_body("image-content")
+                .create_async()
+                .await;
+
+            let client = DigitalBlasphemyClient::new_test("api_key".to_string(), server.url())?;
+
+            let filename = format!(
+                "./{}.jpg",
+                SystemTime::now()
+                    .duration_since(SystemTime::UNIX_EPOCH)?
+                    .as_nanos()
+            );
+
+            client
+                .download_wallpaper(&filename, &download_wallpaper_request)
+                .await
+                .unwrap();
+
+            download_wallpaper_mock.assert_async().await;
+            download_file_mock.assert_async().await;
+
+            fs::remove_file(&filename)?;
+
+            Ok(())
+        }
+
+        #[tokio::test]
+        async fn download_wallpaper_does_send_show_watermark_if_provided()
+        -> Result<(), Box<dyn Error>> {
+            let mut server = mockito::Server::new_async().await;
+
+            let download_wallpaper_request = DownloadWallpaperRequest::builder()
+                .width(2)
+                .height(3)
+                .wallpaper_id(4)
+                .show_watermark(true)
+                .build();
+
+            let download_wallpaper_mock = server
+                .mock(
+                    "GET",
+                    Matcher::Regex(r"^/v2/core/download/wallpaper.*$".to_string()),
+                )
+                .match_query(Matcher::Regex("show_watermark=true".to_string()))
+                .with_status(200)
+                .with_header("content-type", "application/json")
+                .with_body(
+                    fs::read_to_string(
+                        "resources/download_wallpaper_success_fully_populated.json",
+                    )?
+                    .replace("{{host}}", &server.url()),
+                )
+                .create_async()
+                .await;
+
+            let download_file_mock = server
+                .mock("GET", Matcher::Regex(r"^/test.jpg$".to_string()))
+                .with_status(200)
+                .with_header("content-type", "image/jpg")
+                .with_body("image-content")
+                .create_async()
+                .await;
+
+            let client = DigitalBlasphemyClient::new_test("api_key".to_string(), server.url())?;
+
+            let filename = format!(
+                "./{}.jpg",
+                SystemTime::now()
+                    .duration_since(SystemTime::UNIX_EPOCH)?
+                    .as_nanos()
+            );
+
+            client
+                .download_wallpaper(&filename, &download_wallpaper_request)
+                .await
+                .unwrap();
+
+            download_wallpaper_mock.assert_async().await;
+            download_file_mock.assert_async().await;
+
+            fs::remove_file(&filename)?;
+
+            Ok(())
+        }
+
+        #[tokio::test]
+        async fn download_wallpaper_can_map_successful_response_fully_populated()
+        -> Result<(), Box<dyn Error>> {
+            let mut server = mockito::Server::new_async().await;
+
+            let download_wallpaper_request = DownloadWallpaperRequest::builder()
+                .width(2)
+                .height(3)
+                .wallpaper_id(4)
+                .build();
+
+            let download_wallpaper_mock = server
+                .mock(
+                    "GET",
+                    Matcher::Regex(r"^/v2/core/download/wallpaper.*$".to_string()),
+                )
+                .match_query(Matcher::Regex("show_watermark=true".to_string()))
+                .with_status(200)
+                .with_header("content-type", "application/json")
+                .with_body(
+                    fs::read_to_string(
+                        "resources/download_wallpaper_success_fully_populated.json",
+                    )?
+                    .replace("{{host}}", &server.url()),
+                )
+                .create_async()
+                .await;
+
+            let download_file_mock = server
+                .mock("GET", Matcher::Regex(r"^/test.jpg$".to_string()))
+                .with_status(200)
+                .with_header("content-type", "image/jpg")
+                .with_body("image-content")
+                .create_async()
+                .await;
+
+            let client = DigitalBlasphemyClient::new_test("api_key".to_string(), server.url())?;
+
+            let filename = format!(
+                "./{}.jpg",
+                SystemTime::now()
+                    .duration_since(SystemTime::UNIX_EPOCH)?
+                    .as_nanos()
+            );
+
+            client
+                .download_wallpaper(&filename, &download_wallpaper_request)
+                .await
+                .unwrap();
+
+            assert_eq!(fs::read_to_string(&filename)?, "image-content");
+
+            download_wallpaper_mock.assert_async().await;
+            download_file_mock.assert_async().await;
+
+            fs::remove_file(&filename)?;
+
+            Ok(())
+        }
+
+        #[tokio::test]
+        async fn download_wallpaper_can_map_successful_response_minimal_populated()
+        -> Result<(), Box<dyn Error>> {
+            let mut server = mockito::Server::new_async().await;
+
+            let download_wallpaper_request = DownloadWallpaperRequest::builder()
+                .width(2)
+                .height(3)
+                .wallpaper_id(4)
+                .build();
+
+            let download_wallpaper_mock = server
+                .mock(
+                    "GET",
+                    Matcher::Regex(r"^/v2/core/download/wallpaper.*$".to_string()),
+                )
+                .match_query(Matcher::Regex("show_watermark=true".to_string()))
+                .with_status(200)
+                .with_header("content-type", "application/json")
+                .with_body(
+                    fs::read_to_string(
+                        "resources/download_wallpaper_success_fully_populated.json",
+                    )?
+                    .replace("{{host}}", &server.url()),
+                )
+                .create_async()
+                .await;
+
+            let download_file_mock = server
+                .mock("GET", Matcher::Regex(r"^/test.jpg$".to_string()))
+                .with_status(200)
+                .with_header("content-type", "image/jpg")
+                .with_body("image-content")
+                .create_async()
+                .await;
+
+            let client = DigitalBlasphemyClient::new_test("api_key".to_string(), server.url())?;
+
+            let filename = format!(
+                "./{}.jpg",
+                SystemTime::now()
+                    .duration_since(SystemTime::UNIX_EPOCH)?
+                    .as_nanos()
+            );
+
+            client
+                .download_wallpaper(&filename, &download_wallpaper_request)
+                .await
+                .unwrap();
+
+            assert_eq!(fs::read_to_string(&filename)?, "image-content");
+
+            download_wallpaper_mock.assert_async().await;
+            download_file_mock.assert_async().await;
+
+            fs::remove_file(&filename)?;
 
             Ok(())
         }

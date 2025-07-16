@@ -1,0 +1,23 @@
+{
+  "db_core": {
+    "timestamp": 1,
+    "endpoints": {
+      "api": "https://api.digitalblasphemy.com/v2/core",
+      "image": "https://arcadia.digitalblasphemy.com",
+      "thumb": "https://cdn.digitalblasphemy.com",
+      "web": "https://digitalblasphemy.com"
+    },
+    "request": {
+      "params": {
+        "type": "single",
+        "width": 2,
+        "height": 3,
+        "wallpaper_id": 4
+      }
+    }
+  },
+  "download": {
+    "expiration": 5,
+    "url": "{{host}}/test.jpg"
+  }
+}
