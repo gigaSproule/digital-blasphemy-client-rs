@@ -283,7 +283,7 @@ impl DigitalBlasphemyClient {
             return Err(unwrapped_response
                 .json::<ErrorResponse>()
                 .await
-                .expect("Unable to parse the body as JSON Error Response"));
+                .expect("Unable to parse the body as JSON ErrorResponse"));
         }
 
         Ok(unwrapped_response)
@@ -364,7 +364,7 @@ mod tests {
         }
 
         #[tokio::test]
-        #[should_panic(expected = "Unable to parse the body as JSON Error Response")]
+        #[should_panic(expected = "Unable to parse the body as JSON ErrorResponse")]
         async fn get_user_information_can_map_unknown_error_response() {
             let mut server = mockito::Server::new_async().await;
 
@@ -2368,7 +2368,7 @@ mod tests {
         }
 
         #[tokio::test]
-        #[should_panic(expected = "Unable to parse the body as JSON Error Response")]
+        #[should_panic(expected = "Unable to parse the body as JSON ErrorResponse")]
         async fn get_wallpapers_can_map_unknown_error_response() {
             let mut server = mockito::Server::new_async().await;
 
@@ -3150,7 +3150,7 @@ mod tests {
         }
 
         #[tokio::test]
-        #[should_panic(expected = "Unable to parse the body as JSON Error Response")]
+        #[should_panic(expected = "Unable to parse the body as JSON ErrorResponse")]
         async fn get_wallpaper_can_map_unknown_error_response() {
             let mut server = mockito::Server::new_async().await;
 
@@ -3672,7 +3672,7 @@ mod tests {
         }
 
         #[tokio::test]
-        #[should_panic(expected = "Unable to parse the body as JSON Error Response")]
+        #[should_panic(expected = "Unable to parse the body as JSON ErrorResponse")]
         async fn download_wallpaper_can_map_unknown_error_response_when_downloading_file() {
             let mut server = mockito::Server::new_async().await;
 
