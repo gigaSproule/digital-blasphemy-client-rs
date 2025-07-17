@@ -1,0 +1,8 @@
+{
+  "code": 400,
+  "description": "Bad Request",
+  "errors": [
+    "\"filter_date_day\" must be less than or equal to 31",
+    "\"limit\" must be greater than or equal to 1"
+  ]
+}

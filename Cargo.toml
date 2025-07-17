@@ -14,3 +14,8 @@ categories = ["api-bindings"]
 serde = { version = "1.0.219", features = ["derive"] }
 reqwest = { version = "0.12.22", features = ["json"] }
 log = "0.4.27"
+
+[dev-dependencies]
+mockito = "1.7.0"
+tokio = { version = "1.46.1", features = ["rt", "macros"] }
+uuid = { version = "1.17.0", features = ["v4"] }

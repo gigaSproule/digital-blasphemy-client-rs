@@ -59,9 +59,12 @@ jobs:
       - name: Run build
         if: github.ref_type != 'tags'
         run: cargo build
-      - name: Run tests
+      - name: Install tarpaulin
         if: github.ref_type != 'tags'
-        run: cargo test
+        run: cargo install cargo-tarpaulin
+      - name: Run tests with coverage
+        if: github.ref_type != 'tags'
+        run: cargo tarpaulin --fail-under 91
   release-dry-run:
     runs-on: "ubuntu-latest"
     timeout-minutes: 30

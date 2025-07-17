@@ -1,0 +1,8 @@
+{
+  "code": 400,
+  "description": "Bad Request",
+  "errors": [
+    "\"type\" must be one of [single, dual, triple, mobile]",
+    "\"width\" must be a number"
+  ]
+}
