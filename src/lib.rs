@@ -303,8 +303,6 @@ mod tests {
     use std::collections::HashMap;
     use std::fs;
 
-    // TODO: Need to test for path parameters
-
     mod get_user_information {
         use super::*;
 
@@ -1796,6 +1794,7 @@ mod tests {
 
             Ok(())
         }
+
         #[tokio::test]
         async fn get_wallpapers_can_map_successful_response_fully_populated()
         -> Result<(), Box<dyn Error>> {
@@ -2808,6 +2807,37 @@ mod tests {
         }
 
         #[tokio::test]
+        async fn get_wallpaper_sends_path_parameters() -> Result<(), Box<dyn Error>> {
+            let mut server = mockito::Server::new_async().await;
+
+            let get_wallpaper_request = GetWallpaperRequest::builder().wallpaper_id(2).build();
+
+            let mock = server
+                .mock(
+                    "GET",
+                    Matcher::Regex(format!(
+                        r"^/v2/core/wallpaper/{}?.*$",
+                        get_wallpaper_request.wallpaper_id
+                    )),
+                )
+                .with_status(200)
+                .with_header("content-type", "application/json")
+                .with_body(fs::read_to_string(
+                    "resources/get_wallpaper_success_fully_populated.json",
+                )?)
+                .create_async()
+                .await;
+
+            let client = DigitalBlasphemyClient::new_test("api_key".to_string(), server.url())?;
+
+            client.get_wallpaper(&get_wallpaper_request).await.unwrap();
+
+            mock.assert_async().await;
+
+            Ok(())
+        }
+
+        #[tokio::test]
         async fn get_wallpaper_can_map_successful_response_fully_populated()
         -> Result<(), Box<dyn Error>> {
             let mut server = mockito::Server::new_async().await;
@@ -3146,6 +3176,63 @@ mod tests {
                     Matcher::Regex(r"^/v2/core/download/wallpaper.*$".to_string()),
                 )
                 .match_query(Matcher::Regex("show_watermark=true".to_string()))
+                .with_status(200)
+                .with_header("content-type", "application/json")
+                .with_body(
+                    fs::read_to_string(
+                        "resources/download_wallpaper_success_fully_populated.json",
+                    )?
+                    .replace("{{host}}", &server.url()),
+                )
+                .create_async()
+                .await;
+
+            let download_file_mock = server
+                .mock("GET", Matcher::Regex(r"^/test.jpg$".to_string()))
+                .with_status(200)
+                .with_header("content-type", "image/jpg")
+                .with_body("image-content")
+                .create_async()
+                .await;
+
+            let client = DigitalBlasphemyClient::new_test("api_key".to_string(), server.url())?;
+
+            let filename = format!("./{}.jpg", Uuid::new_v4().to_string());
+
+            client
+                .download_wallpaper(&filename, &download_wallpaper_request)
+                .await
+                .unwrap();
+
+            download_wallpaper_mock.assert_async().await;
+            download_file_mock.assert_async().await;
+
+            fs::remove_file(&filename)?;
+
+            Ok(())
+        }
+
+        #[tokio::test]
+        async fn download_wallpaper_sends_path_parameters() -> Result<(), Box<dyn Error>> {
+            let mut server = mockito::Server::new_async().await;
+
+            let download_wallpaper_request = DownloadWallpaperRequest::builder()
+                .width(2)
+                .height(3)
+                .wallpaper_id(4)
+                .build();
+
+            let download_wallpaper_mock = server
+                .mock(
+                    "GET",
+                    Matcher::Regex(format!(
+                        r"^/v2/core/download/wallpaper/{}/{}/{}/{}?.*$",
+                        download_wallpaper_request.wallpaper_type.as_str(),
+                        download_wallpaper_request.width,
+                        download_wallpaper_request.height,
+                        download_wallpaper_request.wallpaper_id
+                    )),
+                )
                 .with_status(200)
                 .with_header("content-type", "application/json")
                 .with_body(
