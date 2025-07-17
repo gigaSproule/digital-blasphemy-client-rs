@@ -3143,7 +3143,7 @@ mod tests {
 
             let client = DigitalBlasphemyClient::new_test("api_key".to_string(), server.url())?;
 
-            let filename = format!("./{}.jpg", Uuid::new_v4().to_string());
+            let filename = format!("./{}.jpg", Uuid::new_v4());
 
             client
                 .download_wallpaper(&filename, &download_wallpaper_request)
@@ -3197,7 +3197,7 @@ mod tests {
 
             let client = DigitalBlasphemyClient::new_test("api_key".to_string(), server.url())?;
 
-            let filename = format!("./{}.jpg", Uuid::new_v4().to_string());
+            let filename = format!("./{}.jpg", Uuid::new_v4());
 
             client
                 .download_wallpaper(&filename, &download_wallpaper_request)
@@ -3254,7 +3254,7 @@ mod tests {
 
             let client = DigitalBlasphemyClient::new_test("api_key".to_string(), server.url())?;
 
-            let filename = format!("./{}.jpg", Uuid::new_v4().to_string());
+            let filename = format!("./{}.jpg", Uuid::new_v4());
 
             client
                 .download_wallpaper(&filename, &download_wallpaper_request)
@@ -3307,7 +3307,7 @@ mod tests {
 
             let client = DigitalBlasphemyClient::new_test("api_key".to_string(), server.url())?;
 
-            let filename = format!("./{}.jpg", Uuid::new_v4().to_string());
+            let filename = format!("./{}.jpg", Uuid::new_v4());
 
             client
                 .download_wallpaper(&filename, &download_wallpaper_request)
@@ -3362,7 +3362,7 @@ mod tests {
 
             let client = DigitalBlasphemyClient::new_test("api_key".to_string(), server.url())?;
 
-            let filename = format!("./{}.jpg", Uuid::new_v4().to_string());
+            let filename = format!("./{}.jpg", Uuid::new_v4());
 
             client
                 .download_wallpaper(&filename, &download_wallpaper_request)
@@ -3403,7 +3403,7 @@ mod tests {
 
             let client = DigitalBlasphemyClient::new_test("api_key".to_string(), server.url())?;
 
-            let filename = format!("./{}.jpg", Uuid::new_v4().to_string());
+            let filename = format!("./{}.jpg", Uuid::new_v4());
 
             let error = client
                 .download_wallpaper(&filename, &download_wallpaper_request)
@@ -3458,7 +3458,7 @@ mod tests {
 
             let client = DigitalBlasphemyClient::new_test("api_key".to_string(), server.url())?;
 
-            let filename = format!("./{}.jpg", Uuid::new_v4().to_string());
+            let filename = format!("./{}.jpg", Uuid::new_v4());
 
             let error = client
                 .download_wallpaper(&filename, &download_wallpaper_request)
@@ -3502,7 +3502,7 @@ mod tests {
 
             let client = DigitalBlasphemyClient::new_test("api_key".to_string(), server.url())?;
 
-            let filename = format!("./{}.jpg", Uuid::new_v4().to_string());
+            let filename = format!("./{}.jpg", Uuid::new_v4());
 
             let error = client
                 .download_wallpaper(&filename, &download_wallpaper_request)
@@ -3564,7 +3564,7 @@ mod tests {
 
             let client = DigitalBlasphemyClient::new_test("api_key".to_string(), server.url())?;
 
-            let filename = format!("./{}.jpg", Uuid::new_v4().to_string());
+            let filename = format!("./{}.jpg", Uuid::new_v4());
 
             let error = client
                 .download_wallpaper(&filename, &download_wallpaper_request)
@@ -3619,7 +3619,7 @@ mod tests {
             let client =
                 DigitalBlasphemyClient::new_test("api_key".to_string(), server.url()).unwrap();
 
-            let filename = format!("./{}.jpg", Uuid::new_v4().to_string());
+            let filename = format!("./{}.jpg", Uuid::new_v4());
 
             let _ = client
                 .download_wallpaper(&filename, &download_wallpaper_request)

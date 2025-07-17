@@ -14,7 +14,7 @@ impl fmt::Display for ErrorResponse {
         let errors: String = self
             .errors
             .clone()
-            .unwrap_or(vec![])
+            .unwrap_or_default()
             .iter()
             .map(|error| format!("'{error}'"))
             .collect::<Vec<String>>()
