@@ -283,7 +283,7 @@ impl DigitalBlasphemyClient {
             return Err(unwrapped_response
                 .json::<ErrorResponse>()
                 .await
-                .expect("Unable to parse the body as JSON Error Response"));
+                .expect("Unable to parse the body as JSON ErrorResponse"));
         }
 
         Ok(unwrapped_response)
@@ -312,6 +312,7 @@ mod tests {
 
             let mock = server
                 .mock("GET", "/v2/core/account")
+                .match_header("Authorization", "Bearer api_key")
                 .with_status(200)
                 .with_header("content-type", "application/json")
                 .with_body(fs::read_to_string(
@@ -343,6 +344,7 @@ mod tests {
 
             let mock = server
                 .mock("GET", "/v2/core/account")
+                .match_header("Authorization", "Bearer api_key")
                 .with_status(401)
                 .with_header("content-type", "application/json")
                 .with_body(fs::read_to_string("resources/unauthorised_response.json")?)
@@ -362,12 +364,13 @@ mod tests {
         }
 
         #[tokio::test]
-        #[should_panic(expected = "Unable to parse the body as JSON Error Response")]
+        #[should_panic(expected = "Unable to parse the body as JSON ErrorResponse")]
         async fn get_user_information_can_map_unknown_error_response() {
             let mut server = mockito::Server::new_async().await;
 
             server
                 .mock("GET", "/v2/core/account")
+                .match_header("Authorization", "Bearer api_key")
                 .with_status(405)
                 .create_async()
                 .await;
@@ -395,6 +398,7 @@ mod tests {
                     Matcher::Regex(r"^/v2/core/wallpapers.*$".to_string()),
                 )
                 .match_query(Matcher::Regex("[^filter_date_day]".to_string()))
+                .match_header("Authorization", "Bearer api_key")
                 .with_status(200)
                 .with_header("content-type", "application/json")
                 .with_body(fs::read_to_string(
@@ -428,6 +432,7 @@ mod tests {
                     Matcher::Regex(r"^/v2/core/wallpapers.*$".to_string()),
                 )
                 .match_query(Matcher::Regex("filter_date_day=1".to_string()))
+                .match_header("Authorization", "Bearer api_key")
                 .with_status(200)
                 .with_header("content-type", "application/json")
                 .with_body(fs::read_to_string(
@@ -461,6 +466,7 @@ mod tests {
                     Matcher::Regex(r"^/v2/core/wallpapers.*$".to_string()),
                 )
                 .match_query(Matcher::Regex("[^filter_date_month]".to_string()))
+                .match_header("Authorization", "Bearer api_key")
                 .with_status(200)
                 .with_header("content-type", "application/json")
                 .with_body(fs::read_to_string(
@@ -495,6 +501,7 @@ mod tests {
                     Matcher::Regex(r"^/v2/core/wallpapers.*$".to_string()),
                 )
                 .match_query(Matcher::Regex("filter_date_month=1".to_string()))
+                .match_header("Authorization", "Bearer api_key")
                 .with_status(200)
                 .with_header("content-type", "application/json")
                 .with_body(fs::read_to_string(
@@ -528,6 +535,7 @@ mod tests {
                     Matcher::Regex(r"^/v2/core/wallpapers.*$".to_string()),
                 )
                 .match_query(Matcher::Regex("[^filter_date_year]".to_string()))
+                .match_header("Authorization", "Bearer api_key")
                 .with_status(200)
                 .with_header("content-type", "application/json")
                 .with_body(fs::read_to_string(
@@ -563,6 +571,7 @@ mod tests {
                     Matcher::Regex(r"^/v2/core/wallpapers.*$".to_string()),
                 )
                 .match_query(Matcher::Regex("filter_date_year=1997".to_string()))
+                .match_header("Authorization", "Bearer api_key")
                 .with_status(200)
                 .with_header("content-type", "application/json")
                 .with_body(fs::read_to_string(
@@ -596,6 +605,7 @@ mod tests {
                     Matcher::Regex(r"^/v2/core/wallpapers.*$".to_string()),
                 )
                 .match_query(Matcher::Regex("filter_date_operator=%3E%3D".to_string()))
+                .match_header("Authorization", "Bearer api_key")
                 .with_status(200)
                 .with_header("content-type", "application/json")
                 .with_body(fs::read_to_string(
@@ -631,6 +641,7 @@ mod tests {
                     Matcher::Regex(r"^/v2/core/wallpapers.*$".to_string()),
                 )
                 .match_query(Matcher::Regex("filter_date_operator=%3D".to_string()))
+                .match_header("Authorization", "Bearer api_key")
                 .with_status(200)
                 .with_header("content-type", "application/json")
                 .with_body(fs::read_to_string(
@@ -664,6 +675,7 @@ mod tests {
                     Matcher::Regex(r"^/v2/core/wallpapers.*$".to_string()),
                 )
                 .match_query(Matcher::Regex("[^filter_gallery]".to_string()))
+                .match_header("Authorization", "Bearer api_key")
                 .with_status(200)
                 .with_header("content-type", "application/json")
                 .with_body(fs::read_to_string(
@@ -701,6 +713,7 @@ mod tests {
                 .match_query(Matcher::Regex(
                     "filter_gallery=1&filter_gallery=2".to_string(),
                 ))
+                .match_header("Authorization", "Bearer api_key")
                 .with_status(200)
                 .with_header("content-type", "application/json")
                 .with_body(fs::read_to_string(
@@ -734,6 +747,7 @@ mod tests {
                     Matcher::Regex(r"^/v2/core/wallpapers.*$".to_string()),
                 )
                 .match_query(Matcher::Regex("[^filter_rating]".to_string()))
+                .match_header("Authorization", "Bearer api_key")
                 .with_status(200)
                 .with_header("content-type", "application/json")
                 .with_body(fs::read_to_string(
@@ -767,6 +781,7 @@ mod tests {
                     Matcher::Regex(r"^/v2/core/wallpapers.*$".to_string()),
                 )
                 .match_query(Matcher::Regex("filter_rating=1.2".to_string()))
+                .match_header("Authorization", "Bearer api_key")
                 .with_status(200)
                 .with_header("content-type", "application/json")
                 .with_body(fs::read_to_string(
@@ -800,6 +815,7 @@ mod tests {
                     Matcher::Regex(r"^/v2/core/wallpapers.*$".to_string()),
                 )
                 .match_query(Matcher::Regex("filter_rating_operator=%3E%3D".to_string()))
+                .match_header("Authorization", "Bearer api_key")
                 .with_status(200)
                 .with_header("content-type", "application/json")
                 .with_body(fs::read_to_string(
@@ -835,6 +851,7 @@ mod tests {
                     Matcher::Regex(r"^/v2/core/wallpapers.*$".to_string()),
                 )
                 .match_query(Matcher::Regex("filter_rating_operator=%3D".to_string()))
+                .match_header("Authorization", "Bearer api_key")
                 .with_status(200)
                 .with_header("content-type", "application/json")
                 .with_body(fs::read_to_string(
@@ -868,6 +885,7 @@ mod tests {
                     Matcher::Regex(r"^/v2/core/wallpapers.*$".to_string()),
                 )
                 .match_query(Matcher::Regex("[^filter_res_height]".to_string()))
+                .match_header("Authorization", "Bearer api_key")
                 .with_status(200)
                 .with_header("content-type", "application/json")
                 .with_body(fs::read_to_string(
@@ -902,6 +920,7 @@ mod tests {
                     Matcher::Regex(r"^/v2/core/wallpapers.*$".to_string()),
                 )
                 .match_query(Matcher::Regex("filter_res_height=1".to_string()))
+                .match_header("Authorization", "Bearer api_key")
                 .with_status(200)
                 .with_header("content-type", "application/json")
                 .with_body(fs::read_to_string(
@@ -935,6 +954,7 @@ mod tests {
                     Matcher::Regex(r"^/v2/core/wallpapers.*$".to_string()),
                 )
                 .match_query(Matcher::Regex("filter_res_operator=%3E%3D".to_string()))
+                .match_header("Authorization", "Bearer api_key")
                 .with_status(200)
                 .with_header("content-type", "application/json")
                 .with_body(fs::read_to_string(
@@ -970,6 +990,7 @@ mod tests {
                     Matcher::Regex(r"^/v2/core/wallpapers.*$".to_string()),
                 )
                 .match_query(Matcher::Regex("filter_res_operator=%3D".to_string()))
+                .match_header("Authorization", "Bearer api_key")
                 .with_status(200)
                 .with_header("content-type", "application/json")
                 .with_body(fs::read_to_string(
@@ -1005,6 +1026,7 @@ mod tests {
                 .match_query(Matcher::Regex(
                     "filter_res_operator_height=%3E%3D".to_string(),
                 ))
+                .match_header("Authorization", "Bearer api_key")
                 .with_status(200)
                 .with_header("content-type", "application/json")
                 .with_body(fs::read_to_string(
@@ -1040,6 +1062,7 @@ mod tests {
                     Matcher::Regex(r"^/v2/core/wallpapers.*$".to_string()),
                 )
                 .match_query(Matcher::Regex("filter_res_operator_height=%3D".to_string()))
+                .match_header("Authorization", "Bearer api_key")
                 .with_status(200)
                 .with_header("content-type", "application/json")
                 .with_body(fs::read_to_string(
@@ -1075,6 +1098,7 @@ mod tests {
                 .match_query(Matcher::Regex(
                     "filter_res_operator_width=%3E%3D".to_string(),
                 ))
+                .match_header("Authorization", "Bearer api_key")
                 .with_status(200)
                 .with_header("content-type", "application/json")
                 .with_body(fs::read_to_string(
@@ -1110,6 +1134,7 @@ mod tests {
                     Matcher::Regex(r"^/v2/core/wallpapers.*$".to_string()),
                 )
                 .match_query(Matcher::Regex("filter_res_operator_width=%3D".to_string()))
+                .match_header("Authorization", "Bearer api_key")
                 .with_status(200)
                 .with_header("content-type", "application/json")
                 .with_body(fs::read_to_string(
@@ -1143,6 +1168,7 @@ mod tests {
                     Matcher::Regex(r"^/v2/core/wallpapers.*$".to_string()),
                 )
                 .match_query(Matcher::Regex("[^filter_res_width]".to_string()))
+                .match_header("Authorization", "Bearer api_key")
                 .with_status(200)
                 .with_header("content-type", "application/json")
                 .with_body(fs::read_to_string(
@@ -1177,6 +1203,7 @@ mod tests {
                     Matcher::Regex(r"^/v2/core/wallpapers.*$".to_string()),
                 )
                 .match_query(Matcher::Regex("filter_res_width=1".to_string()))
+                .match_header("Authorization", "Bearer api_key")
                 .with_status(200)
                 .with_header("content-type", "application/json")
                 .with_body(fs::read_to_string(
@@ -1210,6 +1237,7 @@ mod tests {
                     Matcher::Regex(r"^/v2/core/wallpapers.*$".to_string()),
                 )
                 .match_query(Matcher::Regex("[^filter_tag]".to_string()))
+                .match_header("Authorization", "Bearer api_key")
                 .with_status(200)
                 .with_header("content-type", "application/json")
                 .with_body(fs::read_to_string(
@@ -1244,6 +1272,7 @@ mod tests {
                     Matcher::Regex(r"^/v2/core/wallpapers.*$".to_string()),
                 )
                 .match_query(Matcher::Regex("filter_tag=1&filter_tag=2".to_string()))
+                .match_header("Authorization", "Bearer api_key")
                 .with_status(200)
                 .with_header("content-type", "application/json")
                 .with_body(fs::read_to_string(
@@ -1276,6 +1305,7 @@ mod tests {
                     Matcher::Regex(r"^/v2/core/wallpapers.*$".to_string()),
                 )
                 .match_query(Matcher::Regex("limit=10".to_string()))
+                .match_header("Authorization", "Bearer api_key")
                 .with_status(200)
                 .with_header("content-type", "application/json")
                 .with_body(fs::read_to_string(
@@ -1308,6 +1338,7 @@ mod tests {
                     Matcher::Regex(r"^/v2/core/wallpapers.*$".to_string()),
                 )
                 .match_query(Matcher::Regex("limit=1".to_string()))
+                .match_header("Authorization", "Bearer api_key")
                 .with_status(200)
                 .with_header("content-type", "application/json")
                 .with_body(fs::read_to_string(
@@ -1340,6 +1371,7 @@ mod tests {
                     Matcher::Regex(r"^/v2/core/wallpapers.*$".to_string()),
                 )
                 .match_query(Matcher::Regex("order=asc".to_string()))
+                .match_header("Authorization", "Bearer api_key")
                 .with_status(200)
                 .with_header("content-type", "application/json")
                 .with_body(fs::read_to_string(
@@ -1374,6 +1406,7 @@ mod tests {
                     Matcher::Regex(r"^/v2/core/wallpapers.*$".to_string()),
                 )
                 .match_query(Matcher::Regex("order=desc".to_string()))
+                .match_header("Authorization", "Bearer api_key")
                 .with_status(200)
                 .with_header("content-type", "application/json")
                 .with_body(fs::read_to_string(
@@ -1408,6 +1441,7 @@ mod tests {
                     Matcher::Regex(r"^/v2/core/wallpapers.*$".to_string()),
                 )
                 .match_query(Matcher::Regex("[^order_by]".to_string()))
+                .match_header("Authorization", "Bearer api_key")
                 .with_status(200)
                 .with_header("content-type", "application/json")
                 .with_body(fs::read_to_string(
@@ -1442,6 +1476,7 @@ mod tests {
                     Matcher::Regex(r"^/v2/core/wallpapers.*$".to_string()),
                 )
                 .match_query(Matcher::Regex("order_by=name".to_string()))
+                .match_header("Authorization", "Bearer api_key")
                 .with_status(200)
                 .with_header("content-type", "application/json")
                 .with_body(fs::read_to_string(
@@ -1474,6 +1509,7 @@ mod tests {
                     Matcher::Regex(r"^/v2/core/wallpapers.*$".to_string()),
                 )
                 .match_query(Matcher::Regex("page=1".to_string()))
+                .match_header("Authorization", "Bearer api_key")
                 .with_status(200)
                 .with_header("content-type", "application/json")
                 .with_body(fs::read_to_string(
@@ -1506,6 +1542,7 @@ mod tests {
                     Matcher::Regex(r"^/v2/core/wallpapers.*$".to_string()),
                 )
                 .match_query(Matcher::Regex("page=2".to_string()))
+                .match_header("Authorization", "Bearer api_key")
                 .with_status(200)
                 .with_header("content-type", "application/json")
                 .with_body(fs::read_to_string(
@@ -1538,6 +1575,7 @@ mod tests {
                     Matcher::Regex(r"^/v2/core/wallpapers.*$".to_string()),
                 )
                 .match_query(Matcher::Regex("[^s]".to_string()))
+                .match_header("Authorization", "Bearer api_key")
                 .with_status(200)
                 .with_header("content-type", "application/json")
                 .with_body(fs::read_to_string(
@@ -1572,6 +1610,7 @@ mod tests {
                     Matcher::Regex(r"^/v2/core/wallpapers.*$".to_string()),
                 )
                 .match_query(Matcher::Regex("s=search".to_string()))
+                .match_header("Authorization", "Bearer api_key")
                 .with_status(200)
                 .with_header("content-type", "application/json")
                 .with_body(fs::read_to_string(
@@ -1605,6 +1644,7 @@ mod tests {
                     Matcher::Regex(r"^/v2/core/wallpapers.*$".to_string()),
                 )
                 .match_query(Matcher::Regex("show_comments=false".to_string()))
+                .match_header("Authorization", "Bearer api_key")
                 .with_status(200)
                 .with_header("content-type", "application/json")
                 .with_body(fs::read_to_string(
@@ -1639,6 +1679,7 @@ mod tests {
                     Matcher::Regex(r"^/v2/core/wallpapers.*$".to_string()),
                 )
                 .match_query(Matcher::Regex("show_comments=true".to_string()))
+                .match_header("Authorization", "Bearer api_key")
                 .with_status(200)
                 .with_header("content-type", "application/json")
                 .with_body(fs::read_to_string(
@@ -1672,6 +1713,7 @@ mod tests {
                     Matcher::Regex(r"^/v2/core/wallpapers.*$".to_string()),
                 )
                 .match_query(Matcher::Regex("show_pickle_jar=false".to_string()))
+                .match_header("Authorization", "Bearer api_key")
                 .with_status(200)
                 .with_header("content-type", "application/json")
                 .with_body(fs::read_to_string(
@@ -1707,6 +1749,7 @@ mod tests {
                     Matcher::Regex(r"^/v2/core/wallpapers.*$".to_string()),
                 )
                 .match_query(Matcher::Regex("show_pickle_jar=true".to_string()))
+                .match_header("Authorization", "Bearer api_key")
                 .with_status(200)
                 .with_header("content-type", "application/json")
                 .with_body(fs::read_to_string(
@@ -1740,6 +1783,7 @@ mod tests {
                     Matcher::Regex(r"^/v2/core/wallpapers.*$".to_string()),
                 )
                 .match_query(Matcher::Regex("show_resolutions=true".to_string()))
+                .match_header("Authorization", "Bearer api_key")
                 .with_status(200)
                 .with_header("content-type", "application/json")
                 .with_body(fs::read_to_string(
@@ -1775,6 +1819,7 @@ mod tests {
                     Matcher::Regex(r"^/v2/core/wallpapers.*$".to_string()),
                 )
                 .match_query(Matcher::Regex("show_resolutions=false".to_string()))
+                .match_header("Authorization", "Bearer api_key")
                 .with_status(200)
                 .with_header("content-type", "application/json")
                 .with_body(fs::read_to_string(
@@ -1807,6 +1852,7 @@ mod tests {
                     "GET",
                     mockito::Matcher::Regex(r"^/v2/core/wallpapers.*$".to_string()),
                 )
+                .match_header("Authorization", "Bearer api_key")
                 .with_status(200)
                 .with_header("content-type", "application/json")
                 .with_body(fs::read_to_string(
@@ -2108,6 +2154,7 @@ mod tests {
                     "GET",
                     Matcher::Regex(r"^/v2/core/wallpapers.*$".to_string()),
                 )
+                .match_header("Authorization", "Bearer api_key")
                 .with_status(200)
                 .with_header("content-type", "application/json")
                 .with_body(fs::read_to_string(
@@ -2256,6 +2303,7 @@ mod tests {
                     "GET",
                     Matcher::Regex(r"^/v2/core/wallpapers.*$".to_string()),
                 )
+                .match_header("Authorization", "Bearer api_key")
                 .with_status(401)
                 .with_header("content-type", "application/json")
                 .with_body(fs::read_to_string("resources/unauthorised_response.json")?)
@@ -2288,6 +2336,7 @@ mod tests {
                     "GET",
                     Matcher::Regex(r"^/v2/core/wallpapers.*$".to_string()),
                 )
+                .match_header("Authorization", "Bearer api_key")
                 .with_status(400)
                 .with_header("content-type", "application/json")
                 .with_body(fs::read_to_string(
@@ -2319,7 +2368,7 @@ mod tests {
         }
 
         #[tokio::test]
-        #[should_panic(expected = "Unable to parse the body as JSON Error Response")]
+        #[should_panic(expected = "Unable to parse the body as JSON ErrorResponse")]
         async fn get_wallpapers_can_map_unknown_error_response() {
             let mut server = mockito::Server::new_async().await;
 
@@ -2330,6 +2379,7 @@ mod tests {
                     "GET",
                     Matcher::Regex(r"^/v2/core/wallpapers.*$".to_string()),
                 )
+                .match_header("Authorization", "Bearer api_key")
                 .with_status(405)
                 .create_async()
                 .await;
@@ -2357,6 +2407,7 @@ mod tests {
             let mock = server
                 .mock("GET", Matcher::Regex(r"^/v2/core/wallpaper.*$".to_string()))
                 .match_query(Matcher::Regex("[^filter_res_height]".to_string()))
+                .match_header("Authorization", "Bearer api_key")
                 .with_status(200)
                 .with_header("content-type", "application/json")
                 .with_body(fs::read_to_string(
@@ -2387,6 +2438,7 @@ mod tests {
             let mock = server
                 .mock("GET", Matcher::Regex(r"^/v2/core/wallpaper.*$".to_string()))
                 .match_query(Matcher::Regex("filter_res_height=1".to_string()))
+                .match_header("Authorization", "Bearer api_key")
                 .with_status(200)
                 .with_header("content-type", "application/json")
                 .with_body(fs::read_to_string(
@@ -2414,6 +2466,7 @@ mod tests {
             let mock = server
                 .mock("GET", Matcher::Regex(r"^/v2/core/wallpaper.*$".to_string()))
                 .match_query(Matcher::Regex("[^filter_res_width]".to_string()))
+                .match_header("Authorization", "Bearer api_key")
                 .with_status(200)
                 .with_header("content-type", "application/json")
                 .with_body(fs::read_to_string(
@@ -2444,6 +2497,7 @@ mod tests {
             let mock = server
                 .mock("GET", Matcher::Regex(r"^/v2/core/wallpaper.*$".to_string()))
                 .match_query(Matcher::Regex("filter_res_width=1".to_string()))
+                .match_header("Authorization", "Bearer api_key")
                 .with_status(200)
                 .with_header("content-type", "application/json")
                 .with_body(fs::read_to_string(
@@ -2471,6 +2525,7 @@ mod tests {
             let mock = server
                 .mock("GET", Matcher::Regex(r"^/v2/core/wallpaper.*$".to_string()))
                 .match_query(Matcher::Regex("filter_res_operator=%3E%3D".to_string()))
+                .match_header("Authorization", "Bearer api_key")
                 .with_status(200)
                 .with_header("content-type", "application/json")
                 .with_body(fs::read_to_string(
@@ -2501,6 +2556,7 @@ mod tests {
             let mock = server
                 .mock("GET", Matcher::Regex(r"^/v2/core/wallpaper.*$".to_string()))
                 .match_query(Matcher::Regex("filter_res_operator=%3D".to_string()))
+                .match_header("Authorization", "Bearer api_key")
                 .with_status(200)
                 .with_header("content-type", "application/json")
                 .with_body(fs::read_to_string(
@@ -2530,6 +2586,7 @@ mod tests {
                 .match_query(Matcher::Regex(
                     "filter_res_operator_height=%3E%3D".to_string(),
                 ))
+                .match_header("Authorization", "Bearer api_key")
                 .with_status(200)
                 .with_header("content-type", "application/json")
                 .with_body(fs::read_to_string(
@@ -2560,6 +2617,7 @@ mod tests {
             let mock = server
                 .mock("GET", Matcher::Regex(r"^/v2/core/wallpaper.*$".to_string()))
                 .match_query(Matcher::Regex("filter_res_operator_height=%3D".to_string()))
+                .match_header("Authorization", "Bearer api_key")
                 .with_status(200)
                 .with_header("content-type", "application/json")
                 .with_body(fs::read_to_string(
@@ -2589,6 +2647,7 @@ mod tests {
                 .match_query(Matcher::Regex(
                     "filter_res_operator_width=%3E%3D".to_string(),
                 ))
+                .match_header("Authorization", "Bearer api_key")
                 .with_status(200)
                 .with_header("content-type", "application/json")
                 .with_body(fs::read_to_string(
@@ -2619,6 +2678,7 @@ mod tests {
             let mock = server
                 .mock("GET", Matcher::Regex(r"^/v2/core/wallpaper.*$".to_string()))
                 .match_query(Matcher::Regex("filter_res_operator_width=%3D".to_string()))
+                .match_header("Authorization", "Bearer api_key")
                 .with_status(200)
                 .with_header("content-type", "application/json")
                 .with_body(fs::read_to_string(
@@ -2646,6 +2706,7 @@ mod tests {
             let mock = server
                 .mock("GET", Matcher::Regex(r"^/v2/core/wallpaper.*$".to_string()))
                 .match_query(Matcher::Regex("show_comments=false".to_string()))
+                .match_header("Authorization", "Bearer api_key")
                 .with_status(200)
                 .with_header("content-type", "application/json")
                 .with_body(fs::read_to_string(
@@ -2675,6 +2736,7 @@ mod tests {
             let mock = server
                 .mock("GET", Matcher::Regex(r"^/v2/core/wallpaper.*$".to_string()))
                 .match_query(Matcher::Regex("show_comments=true".to_string()))
+                .match_header("Authorization", "Bearer api_key")
                 .with_status(200)
                 .with_header("content-type", "application/json")
                 .with_body(fs::read_to_string(
@@ -2702,6 +2764,7 @@ mod tests {
             let mock = server
                 .mock("GET", Matcher::Regex(r"^/v2/core/wallpaper.*$".to_string()))
                 .match_query(Matcher::Regex("show_pickle_jar=false".to_string()))
+                .match_header("Authorization", "Bearer api_key")
                 .with_status(200)
                 .with_header("content-type", "application/json")
                 .with_body(fs::read_to_string(
@@ -2732,6 +2795,7 @@ mod tests {
             let mock = server
                 .mock("GET", Matcher::Regex(r"^/v2/core/wallpaper.*$".to_string()))
                 .match_query(Matcher::Regex("show_pickle_jar=true".to_string()))
+                .match_header("Authorization", "Bearer api_key")
                 .with_status(200)
                 .with_header("content-type", "application/json")
                 .with_body(fs::read_to_string(
@@ -2759,6 +2823,7 @@ mod tests {
             let mock = server
                 .mock("GET", Matcher::Regex(r"^/v2/core/wallpaper.*$".to_string()))
                 .match_query(Matcher::Regex("show_resolutions=true".to_string()))
+                .match_header("Authorization", "Bearer api_key")
                 .with_status(200)
                 .with_header("content-type", "application/json")
                 .with_body(fs::read_to_string(
@@ -2789,6 +2854,7 @@ mod tests {
             let mock = server
                 .mock("GET", Matcher::Regex(r"^/v2/core/wallpaper.*$".to_string()))
                 .match_query(Matcher::Regex("show_resolutions=false".to_string()))
+                .match_header("Authorization", "Bearer api_key")
                 .with_status(200)
                 .with_header("content-type", "application/json")
                 .with_body(fs::read_to_string(
@@ -2820,6 +2886,7 @@ mod tests {
                         get_wallpaper_request.wallpaper_id
                     )),
                 )
+                .match_header("Authorization", "Bearer api_key")
                 .with_status(200)
                 .with_header("content-type", "application/json")
                 .with_body(fs::read_to_string(
@@ -2846,6 +2913,7 @@ mod tests {
 
             let mock = server
                 .mock("GET", Matcher::Regex(r"^/v2/core/wallpaper.*$".to_string()))
+                .match_header("Authorization", "Bearer api_key")
                 .with_status(200)
                 .with_header("content-type", "application/json")
                 .with_body(fs::read_to_string(
@@ -2991,6 +3059,7 @@ mod tests {
 
             let mock = server
                 .mock("GET", Matcher::Regex(r"^/v2/core/wallpaper.*$".to_string()))
+                .match_header("Authorization", "Bearer api_key")
                 .with_status(200)
                 .with_header("content-type", "application/json")
                 .with_body(fs::read_to_string(
@@ -3019,6 +3088,7 @@ mod tests {
 
             let mock = server
                 .mock("GET", Matcher::Regex(r"^/v2/core/wallpaper.*$".to_string()))
+                .match_header("Authorization", "Bearer api_key")
                 .with_status(401)
                 .with_header("content-type", "application/json")
                 .with_body(fs::read_to_string("resources/unauthorised_response.json")?)
@@ -3048,6 +3118,7 @@ mod tests {
 
             let mock = server
                 .mock("GET", Matcher::Regex(r"^/v2/core/wallpaper.*$".to_string()))
+                .match_header("Authorization", "Bearer api_key")
                 .with_status(401)
                 .with_header("content-type", "application/json")
                 .with_body(fs::read_to_string(
@@ -3079,7 +3150,7 @@ mod tests {
         }
 
         #[tokio::test]
-        #[should_panic(expected = "Unable to parse the body as JSON Error Response")]
+        #[should_panic(expected = "Unable to parse the body as JSON ErrorResponse")]
         async fn get_wallpaper_can_map_unknown_error_response() {
             let mut server = mockito::Server::new_async().await;
 
@@ -3087,6 +3158,7 @@ mod tests {
 
             server
                 .mock("GET", Matcher::Regex(r"^/v2/core/wallpaper.*$".to_string()))
+                .match_header("Authorization", "Bearer api_key")
                 .with_status(405)
                 .create_async()
                 .await;
@@ -3122,6 +3194,7 @@ mod tests {
                     Matcher::Regex(r"^/v2/core/download/wallpaper.*$".to_string()),
                 )
                 .match_query(Matcher::Regex("show_watermark=true".to_string()))
+                .match_header("Authorization", "Bearer api_key")
                 .with_status(200)
                 .with_header("content-type", "application/json")
                 .with_body(
@@ -3135,6 +3208,7 @@ mod tests {
 
             let download_file_mock = server
                 .mock("GET", Matcher::Regex(r"^/test.jpg$".to_string()))
+                .match_header("Authorization", "Bearer api_key")
                 .with_status(200)
                 .with_header("content-type", "image/jpg")
                 .with_body("image-content")
@@ -3176,6 +3250,7 @@ mod tests {
                     Matcher::Regex(r"^/v2/core/download/wallpaper.*$".to_string()),
                 )
                 .match_query(Matcher::Regex("show_watermark=true".to_string()))
+                .match_header("Authorization", "Bearer api_key")
                 .with_status(200)
                 .with_header("content-type", "application/json")
                 .with_body(
@@ -3189,6 +3264,7 @@ mod tests {
 
             let download_file_mock = server
                 .mock("GET", Matcher::Regex(r"^/test.jpg$".to_string()))
+                .match_header("Authorization", "Bearer api_key")
                 .with_status(200)
                 .with_header("content-type", "image/jpg")
                 .with_body("image-content")
@@ -3233,6 +3309,7 @@ mod tests {
                         download_wallpaper_request.wallpaper_id
                     )),
                 )
+                .match_header("Authorization", "Bearer api_key")
                 .with_status(200)
                 .with_header("content-type", "application/json")
                 .with_body(
@@ -3246,6 +3323,7 @@ mod tests {
 
             let download_file_mock = server
                 .mock("GET", Matcher::Regex(r"^/test.jpg$".to_string()))
+                .match_header("Authorization", "Bearer api_key")
                 .with_status(200)
                 .with_header("content-type", "image/jpg")
                 .with_body("image-content")
@@ -3286,6 +3364,7 @@ mod tests {
                     Matcher::Regex(r"^/v2/core/download/wallpaper.*$".to_string()),
                 )
                 .match_query(Matcher::Regex("show_watermark=true".to_string()))
+                .match_header("Authorization", "Bearer api_key")
                 .with_status(200)
                 .with_header("content-type", "application/json")
                 .with_body(
@@ -3299,6 +3378,7 @@ mod tests {
 
             let download_file_mock = server
                 .mock("GET", Matcher::Regex(r"^/test.jpg$".to_string()))
+                .match_header("Authorization", "Bearer api_key")
                 .with_status(200)
                 .with_header("content-type", "image/jpg")
                 .with_body("image-content")
@@ -3341,6 +3421,7 @@ mod tests {
                     Matcher::Regex(r"^/v2/core/download/wallpaper.*$".to_string()),
                 )
                 .match_query(Matcher::Regex("show_watermark=true".to_string()))
+                .match_header("Authorization", "Bearer api_key")
                 .with_status(200)
                 .with_header("content-type", "application/json")
                 .with_body(
@@ -3354,6 +3435,7 @@ mod tests {
 
             let download_file_mock = server
                 .mock("GET", Matcher::Regex(r"^/test.jpg$".to_string()))
+                .match_header("Authorization", "Bearer api_key")
                 .with_status(200)
                 .with_header("content-type", "image/jpg")
                 .with_body("image-content")
@@ -3395,6 +3477,7 @@ mod tests {
                     "GET",
                     Matcher::Regex(r"^/v2/core/download/wallpaper.*$".to_string()),
                 )
+                .match_header("Authorization", "Bearer api_key")
                 .with_status(401)
                 .with_header("content-type", "application/json")
                 .with_body(fs::read_to_string("resources/unauthorised_response.json")?)
@@ -3437,6 +3520,7 @@ mod tests {
                     Matcher::Regex(r"^/v2/core/download/wallpaper.*$".to_string()),
                 )
                 .match_query(Matcher::Regex("show_watermark=true".to_string()))
+                .match_header("Authorization", "Bearer api_key")
                 .with_status(200)
                 .with_header("content-type", "application/json")
                 .with_body(
@@ -3450,6 +3534,7 @@ mod tests {
 
             let download_file_mock = server
                 .mock("GET", Matcher::Regex(r"^/test.jpg$".to_string()))
+                .match_header("Authorization", "Bearer api_key")
                 .with_status(401)
                 .with_header("content-type", "image/jpg")
                 .with_body(fs::read_to_string("resources/unauthorised_response.json")?)
@@ -3492,6 +3577,7 @@ mod tests {
                     "GET",
                     Matcher::Regex(r"^/v2/core/download/wallpaper.*$".to_string()),
                 )
+                .match_header("Authorization", "Bearer api_key")
                 .with_status(400)
                 .with_header("content-type", "application/json")
                 .with_body(fs::read_to_string(
@@ -3543,6 +3629,7 @@ mod tests {
                     Matcher::Regex(r"^/v2/core/download/wallpaper.*$".to_string()),
                 )
                 .match_query(Matcher::Regex("show_watermark=true".to_string()))
+                .match_header("Authorization", "Bearer api_key")
                 .with_status(200)
                 .with_header("content-type", "application/json")
                 .with_body(
@@ -3556,6 +3643,7 @@ mod tests {
 
             let download_file_mock = server
                 .mock("GET", Matcher::Regex(r"^/test.jpg$".to_string()))
+                .match_header("Authorization", "Bearer api_key")
                 .with_status(404)
                 .with_header("content-type", "text/plain")
                 .with_body("Object Not Found")
@@ -3584,7 +3672,7 @@ mod tests {
         }
 
         #[tokio::test]
-        #[should_panic(expected = "Unable to parse the body as JSON Error Response")]
+        #[should_panic(expected = "Unable to parse the body as JSON ErrorResponse")]
         async fn download_wallpaper_can_map_unknown_error_response_when_downloading_file() {
             let mut server = mockito::Server::new_async().await;
 
@@ -3600,6 +3688,7 @@ mod tests {
                     Matcher::Regex(r"^/v2/core/download/wallpaper.*$".to_string()),
                 )
                 .match_query(Matcher::Regex("show_watermark=true".to_string()))
+                .match_header("Authorization", "Bearer api_key")
                 .with_status(200)
                 .with_header("content-type", "application/json")
                 .with_body(
@@ -3612,6 +3701,7 @@ mod tests {
 
             server
                 .mock("GET", Matcher::Regex(r"^/test.jpg$".to_string()))
+                .match_header("Authorization", "Bearer api_key")
                 .with_status(405)
                 .create_async()
                 .await;
