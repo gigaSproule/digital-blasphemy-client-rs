@@ -41,7 +41,7 @@ impl DigitalBlasphemyClient {
         })
     }
 
-    pub async fn get_user_information(
+    pub async fn get_account_information(
         &self,
     ) -> Result<GetAccountInformationResponse, ErrorResponse> {
         let get_account_information_response = self
@@ -303,11 +303,12 @@ mod tests {
     use std::collections::HashMap;
     use std::fs;
 
-    mod get_user_information {
+    mod get_account_information {
         use super::*;
 
         #[tokio::test]
-        async fn get_user_information_can_map_successful_response() -> Result<(), Box<dyn Error>> {
+        async fn get_account_information_can_map_successful_response() -> Result<(), Box<dyn Error>>
+        {
             let mut server = mockito::Server::new_async().await;
 
             let mock = server
@@ -316,14 +317,14 @@ mod tests {
                 .with_status(200)
                 .with_header("content-type", "application/json")
                 .with_body(fs::read_to_string(
-                    "resources/get_user_information_success.json",
+                    "resources/get_account_information_success.json",
                 )?)
                 .create_async()
                 .await;
 
             let client = DigitalBlasphemyClient::new_test("api_key".to_string(), server.url())?;
 
-            let user_information = client.get_user_information().await.unwrap();
+            let user_information = client.get_account_information().await.unwrap();
 
             assert_eq!(user_information.db_core.timestamp, 1);
             assert!(user_information.user.active);
@@ -338,8 +339,8 @@ mod tests {
         }
 
         #[tokio::test]
-        async fn get_user_information_can_map_unauthorised_response() -> Result<(), Box<dyn Error>>
-        {
+        async fn get_account_information_can_map_unauthorised_response()
+        -> Result<(), Box<dyn Error>> {
             let mut server = mockito::Server::new_async().await;
 
             let mock = server
@@ -353,7 +354,7 @@ mod tests {
 
             let client = DigitalBlasphemyClient::new_test("api_key".to_string(), server.url())?;
 
-            let error = client.get_user_information().await.unwrap_err();
+            let error = client.get_account_information().await.unwrap_err();
 
             assert_eq!(error.code, 401);
             assert_eq!(error.description, "Unauthorized".to_string());
@@ -365,7 +366,7 @@ mod tests {
 
         #[tokio::test]
         #[should_panic(expected = "Unable to parse the body as JSON ErrorResponse")]
-        async fn get_user_information_can_map_unknown_error_response() {
+        async fn get_account_information_can_map_unknown_error_response() {
             let mut server = mockito::Server::new_async().await;
 
             server
@@ -378,7 +379,7 @@ mod tests {
             let client =
                 DigitalBlasphemyClient::new_test("api_key".to_string(), server.url()).unwrap();
 
-            let _ = client.get_user_information().await.unwrap_err();
+            let _ = client.get_account_information().await.unwrap_err();
         }
     }
 
