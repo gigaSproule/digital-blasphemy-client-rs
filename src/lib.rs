@@ -3294,6 +3294,7 @@ mod tests {
             let mut server = mockito::Server::new_async().await;
 
             let download_wallpaper_request = DownloadWallpaperRequest::builder()
+                .wallpaper_type(WallpaperType::Dual)
                 .width(2)
                 .height(3)
                 .wallpaper_id(4)
@@ -3537,7 +3538,7 @@ mod tests {
                 .mock("GET", Matcher::Regex(r"^/test.jpg$".to_string()))
                 .match_header("Authorization", "Bearer api_key")
                 .with_status(401)
-                .with_header("content-type", "image/jpg")
+                .with_header("content-type", "application/json")
                 .with_body(fs::read_to_string("resources/unauthorised_response.json")?)
                 .create_async()
                 .await;
