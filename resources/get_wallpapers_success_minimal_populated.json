@@ -28,8 +28,8 @@
         "id": 7,
         "name": "Vulcan",
         "paths": {
-          "api": "/wallpaper/13",
-          "thumb": "/thumbnail/21x22/vulcan_thumbnail_21x22.jpg",
+          "api": "/wallpaper/7",
+          "thumb": "/thumbnail/9x10/vulcan_thumbnail_9x10.jpg",
           "web": "/sec/vulcan/"
         },
         "rating": "8",

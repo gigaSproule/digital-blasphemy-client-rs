@@ -2179,8 +2179,8 @@ mod tests {
                 free: None,
                 name: "Vulcan".to_string(),
                 paths: Paths {
-                    api: "/wallpaper/13".to_string(),
-                    thumb: "/thumbnail/21x22/vulcan_thumbnail_21x22.jpg".to_string(),
+                    api: "/wallpaper/7".to_string(),
+                    thumb: "/thumbnail/9x10/vulcan_thumbnail_9x10.jpg".to_string(),
                     web: "/sec/vulcan/".to_string(),
                 },
                 pickle_jar: None,
