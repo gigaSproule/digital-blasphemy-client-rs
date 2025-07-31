@@ -29,7 +29,7 @@
         "name": "Vulcan",
         "paths": {
           "api": "/wallpaper/7",
-          "thumb": "/thumbnail/9x10/vulcan_thumbnail_9x10.jpg",
+          "thumb": "/thumbnail/8x9/vulcan_thumbnail_8x9.jpg",
           "web": "/sec/vulcan/"
         },
         "resolutions": {
@@ -38,7 +38,7 @@
               "label": "8x9",
               "width": "8",
               "height": "9",
-              "image": "/single/9x10/vulcan_single_8x9.jpg"
+              "image": "/single/8x9/vulcan_single_8x9.jpg"
             },
             {
               "label": "10x11",

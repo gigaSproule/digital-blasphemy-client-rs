@@ -2180,7 +2180,7 @@ mod tests {
                 name: "Vulcan".to_string(),
                 paths: Paths {
                     api: "/wallpaper/7".to_string(),
-                    thumb: "/thumbnail/9x10/vulcan_thumbnail_9x10.jpg".to_string(),
+                    thumb: "/thumbnail/8x9/vulcan_thumbnail_8x9.jpg".to_string(),
                     web: "/sec/vulcan/".to_string(),
                 },
                 pickle_jar: None,
@@ -2191,7 +2191,7 @@ mod tests {
                             label: "8x9".to_string(),
                             width: "8".to_string(),
                             height: "9".to_string(),
-                            image: "/single/9x10/vulcan_single_8x9.jpg".to_string(),
+                            image: "/single/8x9/vulcan_single_8x9.jpg".to_string(),
                         },
                         Resolution {
                             label: "10x11".to_string(),
