@@ -1956,52 +1956,52 @@ mod tests {
                             image: "/mobile/33x34/vulcan_mobile_33x34.jpg".to_string(),
                         },
                         Resolution {
-                            label: "33x34".to_string(),
-                            width: "33".to_string(),
-                            height: "34".to_string(),
-                            image: "/mobile/33x34/vulcan_mobile_33x34.jpg".to_string(),
+                            label: "35x36".to_string(),
+                            width: "35".to_string(),
+                            height: "36".to_string(),
+                            image: "/mobile/35x36/vulcan_mobile_35x36.jpg".to_string(),
                         },
                     ]),
                 }),
                 sku: Some("vulcan".to_string()),
                 tags: Some(HashMap::from([
                     (
-                        "35".to_string(),
+                        "37".to_string(),
                         Tag {
-                            id: 35,
+                            id: 37,
                             name: "Tag 1".to_string(),
                         },
                     ),
                     (
-                        "36".to_string(),
+                        "38".to_string(),
                         Tag {
-                            id: 36,
+                            id: 38,
                             name: "Tag 2".to_string(),
                         },
                     ),
                 ])),
-                timestamp: Some(37),
+                timestamp: Some(39),
             };
-            let expected_wallpaper_38 = Wallpaper {
-                id: 38,
+            let expected_wallpaper_40 = Wallpaper {
+                id: 40,
                 all_free: Some(false),
                 comments: Some(Comments {
                     comments: vec![
                         Comment {
-                            id: "39".to_string(),
+                            id: "41".to_string(),
                             author_id: "author ID 3".to_string(),
                             author_display: "author display 3".to_string(),
                             content: "Content 4".to_string(),
-                            rating: "40".to_string(),
-                            timestamp: 41,
+                            rating: "42".to_string(),
+                            timestamp: 43,
                         },
                         Comment {
-                            id: "42".to_string(),
+                            id: "44".to_string(),
                             author_id: "author ID 4".to_string(),
                             author_display: "author display 4".to_string(),
                             content: "Content 5".to_string(),
-                            rating: "43".to_string(),
-                            timestamp: 44,
+                            rating: "45".to_string(),
+                            timestamp: 46,
                         },
                     ],
                 }),
@@ -2009,91 +2009,91 @@ mod tests {
                 free: Some(false),
                 name: "Valley I".to_string(),
                 paths: Paths {
-                    api: "/wallpaper/38".to_string(),
-                    thumb: "/thumbnail/46x47/valley_thumbnail_46x47.jpg".to_string(),
+                    api: "/wallpaper/40".to_string(),
+                    thumb: "/thumbnail/48x49/valley_thumbnail_48x49.jpg".to_string(),
                     web: "/sec/valley/".to_string(),
                 },
                 pickle_jar: Some(PickleJar {
                     parent: "parent 2".to_string(),
                     siblings: vec!["sibling 3".to_string(), "sibling 4".to_string()],
                 }),
-                rating: Some("45".to_string()),
+                rating: Some("47".to_string()),
                 resolutions: Some(Resolutions {
                     single: vec![
-                        Resolution {
-                            label: "46x47".to_string(),
-                            width: "46".to_string(),
-                            height: "47".to_string(),
-                            image: "/single/46x47/valley_single_46x47.jpg".to_string(),
-                        },
                         Resolution {
                             label: "48x49".to_string(),
                             width: "48".to_string(),
                             height: "49".to_string(),
                             image: "/single/48x49/valley_single_48x49.jpg".to_string(),
                         },
-                    ],
-                    dual: Some(vec![
                         Resolution {
                             label: "50x51".to_string(),
                             width: "50".to_string(),
                             height: "51".to_string(),
-                            image: "/dual/50x51/valley_dual_50x51.jpg".to_string(),
+                            image: "/single/50x51/valley_single_50x51.jpg".to_string(),
                         },
+                    ],
+                    dual: Some(vec![
                         Resolution {
                             label: "52x53".to_string(),
                             width: "52".to_string(),
                             height: "53".to_string(),
                             image: "/dual/52x53/valley_dual_52x53.jpg".to_string(),
                         },
-                    ]),
-                    triple: Some(vec![
                         Resolution {
                             label: "54x55".to_string(),
                             width: "54".to_string(),
                             height: "55".to_string(),
-                            image: "/triple/54x55/valley_triple_54x55.jpg".to_string(),
+                            image: "/dual/54x55/valley_dual_54x55.jpg".to_string(),
                         },
+                    ]),
+                    triple: Some(vec![
                         Resolution {
                             label: "56x57".to_string(),
                             width: "56".to_string(),
                             height: "57".to_string(),
                             image: "/triple/56x57/valley_triple_56x57.jpg".to_string(),
                         },
-                    ]),
-                    mobile: Some(vec![
                         Resolution {
                             label: "58x59".to_string(),
                             width: "58".to_string(),
                             height: "59".to_string(),
-                            image: "/mobile/58x59/valley_mobile_58x59.jpg".to_string(),
+                            image: "/triple/58x59/valley_triple_58x59.jpg".to_string(),
                         },
+                    ]),
+                    mobile: Some(vec![
                         Resolution {
                             label: "60x61".to_string(),
                             width: "60".to_string(),
                             height: "61".to_string(),
                             image: "/mobile/60x61/valley_mobile_60x61.jpg".to_string(),
                         },
+                        Resolution {
+                            label: "62x63".to_string(),
+                            width: "62".to_string(),
+                            height: "63".to_string(),
+                            image: "/mobile/62x63/valley_mobile_62x63.jpg".to_string(),
+                        },
                     ]),
                 }),
                 sku: Some("valley".to_string()),
                 tags: Some(HashMap::from([
                     (
-                        "63".to_string(),
+                        "65".to_string(),
                         Tag {
-                            id: 63,
+                            id: 65,
                             name: "Tag 4".to_string(),
                         },
                     ),
                     (
-                        "62".to_string(),
+                        "64".to_string(),
                         Tag {
-                            id: 62,
+                            id: 64,
                             name: "Tag 3".to_string(),
                         },
                     ),
                 ])),
-                timestamp: Some(64),
+                timestamp: Some(66),
             };
             let expected_get_wallpapers_response = GetWallpapersResponse {
                 db_core: GetWallpapersDBCore {
@@ -2132,7 +2132,7 @@ mod tests {
                     total_pages: 12,
                     wallpapers: HashMap::from([
                         ("13".to_string(), expected_wallpaper_13),
-                        ("38".to_string(), expected_wallpaper_38),
+                        ("40".to_string(), expected_wallpaper_40),
                     ]),
                 },
             };
