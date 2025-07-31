@@ -2184,20 +2184,20 @@ mod tests {
                     web: "/sec/vulcan/".to_string(),
                 },
                 pickle_jar: None,
-                rating: Some("8".to_string()),
+                rating: None,
                 resolutions: Some(Resolutions {
                     single: vec![
                         Resolution {
-                            label: "9x10".to_string(),
-                            width: "9".to_string(),
-                            height: "10".to_string(),
-                            image: "/single/9x10/vulcan_single_9x10.jpg".to_string(),
+                            label: "8x9".to_string(),
+                            width: "8".to_string(),
+                            height: "9".to_string(),
+                            image: "/single/9x10/vulcan_single_8x9.jpg".to_string(),
                         },
                         Resolution {
-                            label: "11x12".to_string(),
-                            width: "11".to_string(),
-                            height: "12".to_string(),
-                            image: "/single/11x12/vulcan_single_11x12.jpg".to_string(),
+                            label: "10x11".to_string(),
+                            width: "10".to_string(),
+                            height: "11".to_string(),
+                            image: "/single/10x11/vulcan_single_10x11.jpg".to_string(),
                         },
                     ],
                     dual: None,
@@ -2208,16 +2208,16 @@ mod tests {
                 tags: None,
                 timestamp: None,
             };
-            let expected_wallpaper_13 = Wallpaper {
-                id: 13,
+            let expected_wallpaper_12 = Wallpaper {
+                id: 12,
                 all_free: None,
                 comments: None,
                 content: None,
                 free: None,
                 name: "Valley I".to_string(),
                 paths: Paths {
-                    api: "/wallpaper/13".to_string(),
-                    thumb: "/thumbnail/14x15/valley_thumbnail_14x15.jpg".to_string(),
+                    api: "/wallpaper/12".to_string(),
+                    thumb: "/thumbnail/13x14/valley_thumbnail_13x14.jpg".to_string(),
                     web: "/sec/valley/".to_string(),
                 },
                 pickle_jar: None,
@@ -2225,16 +2225,16 @@ mod tests {
                 resolutions: Some(Resolutions {
                     single: vec![
                         Resolution {
-                            label: "14x15".to_string(),
-                            width: "14".to_string(),
-                            height: "15".to_string(),
-                            image: "/single/14x15/valley_single_14x15.jpg".to_string(),
+                            label: "13x14".to_string(),
+                            width: "13".to_string(),
+                            height: "14".to_string(),
+                            image: "/single/13x14/valley_single_13x14.jpg".to_string(),
                         },
                         Resolution {
-                            label: "16x17".to_string(),
-                            width: "16".to_string(),
-                            height: "17".to_string(),
-                            image: "/single/16x17/valley_single_16x17.jpg".to_string(),
+                            label: "15x16".to_string(),
+                            width: "15".to_string(),
+                            height: "16".to_string(),
+                            image: "/single/15x16/valley_single_15x16.jpg".to_string(),
                         },
                     ],
                     dual: None,
@@ -2282,7 +2282,7 @@ mod tests {
                     total_pages: 6,
                     wallpapers: HashMap::from([
                         ("7".to_string(), expected_wallpaper_7),
-                        ("13".to_string(), expected_wallpaper_13),
+                        ("12".to_string(), expected_wallpaper_12),
                     ]),
                 },
             };
