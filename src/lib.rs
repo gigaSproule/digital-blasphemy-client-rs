@@ -252,8 +252,7 @@ impl DigitalBlasphemyClient {
 
         let response = request.send().await;
 
-        if response.is_err() {
-            let error = response.unwrap_err();
+        if let Err(error) = response {
             let status = error.status().unwrap();
             return Err(ErrorResponse {
                 code: status.as_u16() as u64,
