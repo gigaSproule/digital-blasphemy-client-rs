@@ -23,7 +23,7 @@ jobs:
     if: github.ref_type != 'tags'
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
       - name: Setup rust
         uses: actions-rust-lang/setup-rust-toolchain@v1
       - name: Run formatting check
@@ -34,7 +34,7 @@ jobs:
     if: github.ref_type != 'tags'
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
       - name: Setup rust
         uses: actions-rust-lang/setup-rust-toolchain@v1
       - name: Run lint
@@ -50,7 +50,7 @@ jobs:
     timeout-minutes: 30
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
       - name: Setup rust
         uses: actions-rust-lang/setup-rust-toolchain@v1
       - name: Run release build
@@ -73,7 +73,7 @@ jobs:
     if: ${{ github.ref_type != 'tag' }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
       - name: Setup rust
         uses: actions-rust-lang/setup-rust-toolchain@v1
       - name: Publish to crates.io
@@ -89,7 +89,7 @@ jobs:
     if: ${{ github.ref_type == 'tag' }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
       - name: Setup rust
         uses: actions-rust-lang/setup-rust-toolchain@v1
       - name: Configure git
