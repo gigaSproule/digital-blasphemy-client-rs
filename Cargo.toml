@@ -17,5 +17,5 @@ log = "0.4.28"
 
 [dev-dependencies]
 mockito = "=1.7.2"
-tokio = { version = "=1.52.3", features = ["rt", "macros"] }
-uuid = { version = "=1.23.5", features = ["v4"] }
+tokio = { version = "=1.53.0", features = ["rt", "macros"] }
+uuid = { version = "=1.24.0", features = ["v4"] }
